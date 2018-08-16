@@ -1,0 +1,507 @@
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+
+  style.
+    .back-to-top, .back-to-bottom, #accept2 {
+      position: fixed;
+      right: 2%;
+      margin: 5px 5px 5px 5px;
+      color: #666;
+      font-size: 1.5em;
+      z-index: 99;
+    }
+    .back-to-top {
+      bottom: 55%;
+    }
+    #accept2 {
+      bottom: 50%;
+    }
+    .back-to-bottom {
+      bottom: 45%;
+    }
+    #accept2:hover, .back-to-top:hover, .back-to-bottom:hover {
+      color: #66B2FF;
+    }
+    input[type=checkbox] {
+      margin-bottom: 50px;
+      width: 19px;
+      height: 19px; 
+    }  
+    #button {
+      width:100%;
+      margin: auto;
+      text-align: center;
+      vertical-align: middle;
+      margin-bottom: 50px;
+    }
+    h1 {
+      text-align: center;
+    }
+    .images {
+      display: inline-block;
+      min-width: 300px;
+      width: 30%;
+      margin: auto;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .images img {
+      width: 75%; 
+    }
+    .pages {
+      margin: 5em 0 2em 0;
+    }
+    nav.nav1, nav.nav2 {
+      text-align: center;
+    }
+    ul#pagination1, ul#pagination2 {
+      text-align: center;
+    }
+    nav.nav1 li, nav.nav2 li {
+      display: inline;
+    }
+    nav.nav1 a, nav.nav2 a {
+      padding: 10px;
+      color: black;
+      border: 1px solid;
+      border-radius: 25px;
+      width: 50px;
+      background: #57aed1;
+    }
+    ul#pagination2 {
+      margin-bottom: 2em;
+    }
+    .apply_filter_div {
+      width: 50%;
+      float: left;
+    }
+    .select_filter_div {
+      width: 50%;
+      float: right;
+      text-align: right;
+      margin-bottom: 5%;
+    }
+    .main_filters {
+      width: 100%;
+      padding-left: 10%;
+      padding-right: 10%;
+      display: inline;
+      position: absolute;
+    }
+    
+    @media(min-width: 800px) {
+      .select_filter_div {
+        margin-top: 2em;
+      }
+    }
+
+  //POP-UPS
+  .confirm
+    h1 Do you want to accept this set?
+    p 
+      | When you accept a set as final, you can no longer edit it
+      em
+    button#cancel Cancel
+    button#conf(autofocus='') Confirm
+
+  .main_filters
+    .apply_filter_div
+      // NEED TO CREATE FUNCTION HERE
+      form(id='applyFilter', method='post', action='/images/apply_filter')
+        input(type="button", id = 'select_all', value="Select All" onclick="checkall();")
+        input(type="button", id = 'unselect_all', value="Unselect All" onclick="uncheckall();")
+        br
+        input(type="checkbox" id='per_page')
+        | Apply To All Pages
+    
+
+        //DECIDE HOW TO POPULATE FILTER
+        //| Filter:
+        //select#select_filter
+        //for item in filter_list
+        //  option(value=item) #{item}
+        //input(type="submit", name="filter_submit", value="Apply Filter")
+
+    .select_filter_div
+      | Display Images: 
+      select#num_img_filter(onchange='prepArray("a",1)')
+        option(value=5) 5
+        option(value=25) 25
+        option(value=50) 50
+        option(value=100) 100
+        option(value=250) 250
+        option(value=500) 500
+  
+  br
+  br
+  div#page_selector1.pages
+    nav.nav1
+      ul#pagination1
+        li
+          a(href='#') 3
+ 
+  br
+  div#imgs
+
+  div#page_selector2.pages
+    nav.nav2
+      ul#pagination2
+        li
+          a(href='#') 3
+
+  div#button
+    input(id='acceptButton', name='accept', type='submit', value='Accept Set', title='When you accept a set as final, you can no longer edit it.', style='display:none')
+
+  a(href='#top', class='back-to-top')
+    i(class='fa fa-chevron-up')
+  a(href='')
+    i(class='fa fa-floppy-o', id='accept2', style='display:none')
+  a(href='#button', class='back-to-bottom') 
+    i(class='fa fa-chevron-down')
+
+
+    //SCRIPT STARTS HERE
+    script(language='javascript').
+      var socket = io.connect();
+      $(document).ready(function() {
+        $('.confirm').hide()
+        $("li#CreateProject").addClass("visited")
+        $("li#Upload").addClass("previous")
+        $("li#Upload").addClass("visited")
+        $("li#CreateSet").addClass("active")
+        $("li#AnalyzeSet").addClass("next")
+
+        var imgDat = '#{img}'
+        parsed = $.parseJSON(imgDat.replace(/&quot;/g,'"'))
+
+        prepArray('a',1)
+
+        // Up and down arrows
+        $('.back-to-top').click(function(event) {
+          event.preventDefault();
+          $('html,body').animate({scrollTop:0}, 300);
+          return false;
+        })
+        $('.back-to-bottom').click(function(event) {
+          event.preventDefault();
+          $('html, body').animate({scrollTop: $(document).height()}, 300);
+          return false;
+        })
+
+        // Check for loading images
+        var intervalID = setInterval(function() {
+          var gifexist=0
+          for ( var k in parsed.images) {
+            if (parsed.images[k].image.indexOf('.gif') > -1) {
+              gifexist=1
+              break
+            }
+          }
+          if (gifexist == 0) {
+            $('#acceptButton').show()
+            $('#accept2').show()
+            clearInterval(intervalID)
+          }
+        }, 1000) 
+	
+        // Listen to the talk event
+        socket.on('image', function(data) {
+          image_filepath = data.value
+          //showAcceptButton()
+          data.value = data.value.replace('/cors_demo/' + parsed.user + '/' + parsed.project + '/','');
+          data.value = data.value.replace('.jpeg','')
+          $('img#p'+data.value).attr('src',image_filepath)
+          for (var i in parsed.images) {
+            if (parsed.images[i].imgName == data.value) {
+              parsed.images[i].image = image_filepath
+              break
+            }
+          }
+        })
+		
+        // REPLACE innerHTML -- needs testing!
+        socket.on('scores', function(score) {
+          if (score.index == 1) {
+            $('#t' + score.imgName + 'text').html('<p style="margin-bottom: 0px;">' + score.imgName + '</p>')
+            for (var i in parsed.images) {
+              if (parsed.images[i].imgName == score.imgName) {
+                parsed.images[i].QC = []
+                break
+              }
+            }
+          } else {
+            if (score.metric == 'BAD'){
+              $('#t'+score.imgName+'text').append('<input type="checkbox" id="'+score.imgName + '"/>')
+              $('img#p'+score.imgName).css('border','solid 2px red')
+              for (var i in parsed.images) {
+                if (parsed.images[i].imgName == score.imgName) {
+                  parsed.images[i].qcOutput = "BAD"
+                  break
+                }
+              }
+            } else if (score.metric == 'GOOD') {
+              $('#t'+score.imgName+'text').append('<input type="checkbox" id="'+score.imgName + '" checked>')
+              $('img#p'+score.imgName).css('border','solid 2px #7CFC00')
+              for (var i in parsed.images) {
+                if (parsed.images[i].imgName == score.imgName) {
+                  parsed.images[i].qcOutput = "GOOD"
+                  break
+                }
+              }
+            } else {
+              $('#t' + score.imgName + 'text').append($('<p></p>').html('<p style="margin-bottom: 0px;">' + score.metric +': ' + score.value + '</p>'))
+              for (var i in parsed.images) {
+                if (parsed.images[i].imgName == score.imgName) {
+                  parsed.images[i].QC.push({'name': score.metric, 'metrics':score.value})
+                }
+              }
+            }
+          }
+        })	
+      })
+
+      function prepArray(optFilter, optPageno) {
+        $('#imgs').html('')
+        //CHECK FOR GIFs?
+
+
+        
+        //APPLY FILTER HERE
+	
+
+	
+        // GET ONLY PAGE IMAGES
+        var optPagesize = Number(document.getElementById('num_img_filter').value)
+        var numOne = (Number(optPageno)-1)*optPagesize
+        var numTwo = ((Number(optPageno)-1)*optPagesize)+optPagesize
+        var pageData = parsed.images.slice(numOne,numTwo)
+        var pageLen = Math.ceil(parsed.images.length/optPagesize)
+        loadImages(pageData, optPageno, pageLen, parsed)
+      }
+
+      function loadImages(dataArray, pageNum, pageLen, parsed) {
+        $('#pagination1,#pagination2').html('')
+        if (pageNum-2 < 1 || pageLen <= 5) {  // if < 5 pages or current page < 3
+          var start_id = 1
+        } else {
+          var start_id = pageNum - 2
+        }
+        if (pageNum+2 > pageLen || pageLen <= 5) {
+          var end_id = pageLen
+        } else if (pageNum == 1) {
+          var end_id = pageNum + 4
+        } else if (pageNum == 2) {
+          var end_id = pageNum + 3
+        } else {
+          var end_id = pageNum+2
+        }
+
+        if (pageNum != 1) {
+          $('#pagination1,#pagination2').append($('<li></li>').html('<a href="#">&#171</a>'))
+        }
+  
+        for (var i = start_id; i <= end_id; i++) {
+          if (i == pageNum) {
+            $('#pagination1').append($('<li class="active_page" id="'+pageNum+'"></li>').html('<a href="#"> '+ i +'</a>'))
+            $('li.active_page a').css('background','#8bc53f')
+            $('#pagination2').append($('<li class="active_page2"></li>').html('<a href="#"> '+ i +'</a>'))
+            $('li.active_page2 a').css('background', '#8bc53f')
+          } else {
+            $('#pagination1,#pagination2').append($('<li></li>').html('<a href="#"> '+ i +'</a>'))
+          }
+        }
+        
+        if (pageNum != pageLen) {
+          $('#pagination1,#pagination2').append($('<li></li>').html('<a href="#">&#187</a>'))
+        }
+
+        for (var item in dataArray) {
+          var imData = dataArray[item]
+          var $imDiv = $('<div id=images, class=images></div>')
+          $imDiv.append($('<p></p>').html('<p class=saved id=' + imData.imgName +' style=color:white>Saved</p>'))
+          $imDiv.append($('<p></p>').html('<img class=img id=p' + imData.imgName + ' src=' + imData.image + ' style="border:2px solid black;"></img>'))
+          $imDiv.append($('<p></p>').html('<div id=t' + imData.imgName + 'text class=text><p>' + imData.imgName + '</p>'))
+          $('#imgs').append($imDiv)
+          for (var metric in imData.QC) {
+            var metricName = imData.QC[metric].name
+            var qcData = JSON.stringify(imData.QC[metric].metrics).replace(/"/g,'')
+            var elemName = 't' + imData.imgName + 'text'
+            $('#' + elemName).append($('<p></p>').html('<p>' + metricName + ' : ' + qcData + '</p>'))
+          }
+          if (imData.userInput == 'GOOD') {
+            $('img#p'+imData.imgName).css('border', 'solid 2px #7CFC00')
+            $('#' + elemName).append($('<p></p>').html('<input type=checkbox value='+item+' id=' + imData.imgName + ' checked>'))
+          }
+          else if (imData.userInput == 'BAD') {
+            $('img#p'+imData.imgName).css('border', 'solid 2px red')
+            $('#' + elemName).append($('<p></p>').html('<input type=checkbox value='+item+' id=' + imData.imgName + '>'))
+          }
+          else if (imData.userInput == null && imData.qcOutput == 'GOOD' ) {
+            $('img#p'+imData.imgName).css('border', 'solid 2px #7CFC00')
+            $('#' + elemName).append($('<p></p>').html('<input type=checkbox value='+item+' id=' + imData.imgName + ' checked>'))
+          }
+          else if (imData.userInput == null && imData.qcOutput == 'BAD') {
+            $('img#p'+imData.imgName).css('border', 'solid 2px red')
+            $('#' + elemName).append($('<p></p>').html('<input type=checkbox value='+item+' id=' + imData.imgName + '>'))
+          }
+        }
+
+        $('ul#pagination1 li a,ul#pagination2 li a').click(function(e) {
+          e.preventDefault()
+          var tag = $(this)
+          pageNo = tag.text()
+          if (pageNo == String.fromCharCode(171)) {
+            pageNum = Number(pageNum) - 1
+          } else if (pageNo == String.fromCharCode(187)) {
+            pageNum = Number(pageNum) + 1
+          } else {
+            pageNum = Number(pageNo)
+          }
+          var pageSize = document.getElementById('num_img_filter').value 
+          prepArray("filter", pageNum)
+        })
+      
+        $('input:checkbox').not('#per_page').click(function(e) {
+          var obj_id = $(this)[0].id
+          var obj_val = $(this)[0].value
+          //var imgDat = '#{img}'     
+          //var parsed = $.parseJSON(imgDat.replace(/&quot;/g,'"'))
+          var pageSize = document.getElementById('num_img_filter').value 
+
+          $('p#' + obj_id +'.saved').css({'color':'green'})
+          //.delay(1000).queue(function(){$('p#' + obj_id +'.saved').css({'color':'white'})})
+          // TODO look into doing this w/out timeout 
+          setTimeout(function() {
+            $('p#' + obj_id +'.saved').css({'color':'white'})
+          }, 1000)
+
+          if (e.target.checked) {
+            $('img#p'+obj_id).css('border', 'solid 2px #7CFC00')
+            parsed.images[obj_val].userInput = "GOOD" 
+          } else {
+            $('img#p'+obj_id).css('border', 'solid 2px red')
+            parsed.images[obj_val].userInput = "BAD"
+          }
+          $.post('update', {img_path: obj_id, isCheck: e.target.checked})
+        });
+ 
+      }
+      
+      function checkall() {
+        $('input:checkbox').not('#per_page').attr('checked','checked')
+        //$('#select_all').hide()
+        //$('#unselect_all').show()
+        var all_pages = document.getElementById('per_page').checked 
+        var optPagesize = document.getElementById('num_img_filter').value
+        var optPageno = document.getElementsByClassName('active_page')[0].id
+        var start = Number(optPageno-1)*optPagesize
+        var end = (Number(optPageno-1)*optPagesize)+Number(optPagesize)
+
+        if (end > parsed.images.length) {
+          end = Number(parsed.images.length)
+        }
+
+        $.ajax({
+          url: '/images/set_all',
+          type: 'post',
+          data: {check_all: 1, all_pages: all_pages, start_idx: start, end_idx: end},
+        }).done(function() {
+          $('img').css('border','solid 2px #7CFC00')
+          if (all_pages) {
+            location.reload()
+          } else {
+            for (var ids = start; ids < end; ids ++) {
+              parsed.images[ids].userInput = "GOOD"
+            } 
+          }
+        }) 
+      }
+
+      function uncheckall() {
+        $('input:checkbox').not('#per_page').removeAttr('checked')
+        //$('#unselect_all').hide()
+        //$('#select_all').show()
+        var all_pages = document.getElementById('per_page').checked
+        var optPagesize = document.getElementById('num_img_filter').value
+        var optPageno = document.getElementsByClassName('active_page')[0].id 
+        var start = Number(optPageno-1)*optPagesize
+        var end = (Number(optPageno-1)*optPagesize)+Number(optPagesize)
+
+        if (end > parsed.images.length) {
+          end = Number(parsed.images.length)
+        }
+
+        $.ajax({
+          url: '/images/set_all',
+          type: 'post',
+          data: {check_all: 0, all_pages: all_pages, start_idx: start, end_idx: end},
+        }).done(function() {
+          $('img').css('border', 'solid 2px red')
+          if (all_pages) {
+            location.reload()
+          } else {
+            for (var ids = start; ids < end; ids ++) {
+              parsed.images[ids].userInput = "BAD"
+            }
+          }
+        })
+      }
+	 
+      function showAcceptButton() {
+        var images = document.getElementsByClassName('img')
+        var srcString = ''
+        for (i in images) {
+          srcString = srcString + ' ' + images[i].src
+        }
+        if (srcString.indexOf('.gif') == -1) { 
+          $('#acceptButton').show()
+          $('#accept2').show()
+        }
+      }
+
+      $('#accept2').click(function() {
+        var images = document.getElementsByClassName('img')
+        var srcString = ''
+        for (i in images) {
+          srcString = srcString + ' ' + images[i].src
+        }
+        if (srcString.indexOf('.gif') == -1) {
+          $('.confirm').show()
+          event.preventDefault()
+          $('body > *').not('body > .confirm').css({'opacity': '0.5', 'pointer-events': 'none'})
+        } 
+      })
+
+      $('#acceptButton').click(function() {
+        var images = document.getElementsByClassName('img')
+        var srcString = ''
+        for (var i in images) {
+          srcString = srcString + ' ' + images[i].src
+        }
+        if (srcString.indexOf('.gif') == -1) {
+          $('.confirm').show()
+          event.preventDefault()
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events': 'none'})
+        }
+      })
+
+      $('#cancel').click(function() {
+       
+        $('.confirm').hide()
+        $('body > *').css({'opacity': '1', 'pointer-events': 'auto'})
+      })
+
+      $('#conf').click(function() {
+        $.ajax({
+          url: '/images/accept',
+          type: 'post',
+        }).done(function() {
+          $(location).attr('href','/analyze/analyze')
+        })
+      })
+
+      
+  include ../includes/footer.jade

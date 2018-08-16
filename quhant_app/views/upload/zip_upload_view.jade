@@ -1,0 +1,300 @@
+// Code Review 07/22/16 - Daria Tarasova - Anna Schmidt - Jingyi Liu
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+
+  link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+
+  style.
+    h2{
+      padding-left: 10%;
+    }
+    button, #done, #continueoptions {
+      text-align: center;
+    }
+    .Instructions {
+      text-align: center;
+      font-style: italic;
+    }
+
+  .confirm#space
+    h1 Spaces are not allowed in the file name
+    p
+      | Please rename the file
+      em 
+    button#space_ok(autofocus='') Okay
+
+  .confirm#type
+    h1 Wrong File Type. Please upload a zip directory.
+    p
+      | zip!!!
+      em
+    button#type_ok(autofocus='') Okay
+
+  .confirm#fail
+    h1 File failed
+    p
+      | Uploads will not start. Please report issue on our contact us page
+      em
+    button#fail_ok(autofocus = '')
+
+  .confirm#failsize
+    h1 Too many files
+    p
+      | Too many files
+      em
+    button#failsize_ok(autofocus = '')
+
+  .confirm#symbol
+    h1 File names should not have any spaces or symbols
+    p
+      | Examples: @, #, %, ^, (), []
+      em
+    button#symbol_ok(autofocus='') Okay
+
+  .confirm#delete
+    h1 There was a problem deleting your project
+    p
+      | Please report the issue on our contact us page
+      em
+    button#delete_ok(autofocus='') Okay
+
+  .confirm#connerror
+    h1 There was an interuption in your connection
+    p
+      | Click here to continue uploads
+      em
+    button#conn_ok(autofocus='') Okay
+
+
+
+  #main
+    .Instructions
+      h3
+        | For help tarring a file,  
+        | proceed to our 
+        a(href='http://quhant.com/company/faq#tar') FAQ Page
+
+    div#dropsite
+      header.major
+        h2
+          | Upload a tarred directory with images for analysis 
+
+      p Drop files for upload here or use choose file button to find files.
+      
+      // Input to hold images
+      form(enctype='multipart/form-data')
+        input#fileselect(name='file', type='file')
+      button#submit(disabled='', onclick='imgupload(imgupload2)') Upload
+
+    div#continueoptions(style='display:none')
+      a.button.scrolly(href='/project/project') Cancel Upload
+      h2
+        br
+        | Images are uploading. This could take some time. Please do not close window or tab.
+      .progress
+        #prog.progress-bar.progress-bar-striped.active(role='progressbar', aria-valuemin='0', aria-valuemax='100', style='width:0%')
+
+    div#waitingset(style='display:none')
+      h2
+        | Tar directory is being unpackaged. This may take some time. You can now leave this window and check back at a later time.
+
+    div#done(style='display:none')
+      a.button.scrolly(href='/images/display') Review Images
+      h2
+        | Images are done uploading.
+
+    script(language='javascript').
+      $(document).ready(function() {
+        updateSess()
+        var flist = document.getElementById("fileselect").files;
+      })
+
+      function progbar() {
+        var socket = io.connect();
+        socket.on('progress', function(prog) {
+          document.getElementById('prog').style.width = prog.value * 0.95 + '%';
+         if (prog.value > 90) {
+          }
+          if (prog.value == 100) {
+            $('.Instructions').hide()
+            $('#continueoptions').hide()
+            $('#done').show()
+          }
+        });
+        socket.on('set', function(setter) {
+          document.getElementById('prog').style.width = 100 + '%';
+          $('#continueoptions').hide()
+          $('#done').show()
+        })
+      }
+
+      function updateSess() {
+        setTimeout(function() {
+          $.ajax({
+            url: '/upload/updateSess',
+            type: 'post',
+          }).done(function() { 
+            console.log('session renewed')
+          }).fail(function() {
+            console.log("failed")
+          })
+          console.log('renewed')
+          updateSess()
+        },1200000);
+      }
+
+      // Uploads the image to manta
+      function signifies(file, fname) {
+        $.ajax({
+          url: '/upload/sign-zip',
+          type: 'post',
+          data: {file: fname},
+        }).done( function (signature) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('PUT', signature.url, true);
+          xhr.setRequestHeader('accept', 'application/json');
+          xhr.setRequestHeader('access-control-allow-origin', '*');
+          xhr.setRequestHeader('content-type', 'tif');
+          xhr.upload.addEventListener("progress", progressFunction, false);
+          xhr.onprogress = function () {
+            console.log('LOADING',xhr.readyState);
+          }
+          xhr.onreadystatechange = function () {
+            //$('#continueoptions').hide()
+            //$('#done').show()
+
+            if (xhr.readyState == 4) {
+              console.log('File succesfully uploaded');
+              $('#waitingset').show()
+              $.ajax({
+                url: '/upload/processzip',
+                type: 'post',
+                data: {file: fname},
+              }).done(function () {socket_watch_set()})
+            }
+          }
+          xhr.send(file);
+        }).fail(function () {
+          $('#space').show()
+          $('#space_ok').css({'width':'100%'})
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+          $(location).attr('href','/upload/upload_view')
+        });
+      };
+
+      function socket_watch_set() {
+        $.ajax({
+          url: '/upload/watch_set',
+          type: 'post',
+          data: {dat : 'dat'},
+        })
+        var socket = io.connect()
+        socket.on('set', function(setter) {
+          document.getElementById('prog').style.width = 100 + '%';
+          $('.Instructions').hide()
+          $('#continueoptions').hide()
+          $('#done').show()
+          $('#waitingset').hide()
+        })
+
+      }
+
+      function progressFunction(evt) {
+        document.getElementById('prog').style.width = Math.round((evt.loaded) / evt.total * 100)*0.95 + '%'
+        if (Math.round((evt.loaded*0.95)/evt.total*100) > 90) {
+          //socket_watch_set()
+        }
+      }
+
+      // Initiates file uploading and allows user to move to the next step.
+      // Calls back imgupload2 
+      function imgupload(callback) {
+        ImNameCheck=true
+        var filedata = document.getElementById("fileselect").files;
+        // Limit to upload 4000 images
+        if (filedata.length > 1) {
+          $('#failsize').show()
+          $('#failsize_ok').css({'width':'100%'})
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+          ImNameCheck=false;
+        } else {
+          for (var j=0; j < filedata.length; j++) {
+            FileName = filedata[j].name;
+            if(/[^A-Za-z0-9-_.]/.test(FileName)) {
+              $('#fail').show()
+              $('#fail_ok').css({'width':'100%'})
+              $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+              ImNameCheck=false;
+              break;
+            } 
+          }
+          callback(ImNameCheck, null);
+        }
+      }
+
+      function imgupload2(flag, newlist) {
+        if (flag === false) {
+          if ($('#type').css('display') == 'none') {
+            $('#symbol').show()
+            $('#symbol_ok').css({'width':'100%'})
+            $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+          }
+        } else {
+          $('#dropsite').hide()
+          $('h1').hide()
+          $('#continueoptions').show()  
+          progbar()
+ 
+          var filedata = document.getElementById("fileselect").files;         
+          if (newlist === null) {
+            document.getElementById("dropsite").style.display = 'none';
+          } else {
+          var filedata = newlist
+          }
+          if (filedata.length <= 2 ) {
+            for (var i=0; i < filedata.length; i++) {
+              var file = filedata[i];
+              var fname = filedata[i].name;
+              signifies(file, fname);
+            }
+          }
+        }
+      };
+
+      // start of dropsite function: allows user to drag and drop images to upload
+      var dropsite = document.getElementById("dropsite");
+      dropsite.ondragover = function() { return false; };
+      dropsite.ondragend = function() { return false; };
+      dropsite.ondrop = function(ev) {
+        ev.stopPropagation(); ev.preventDefault();
+        document.getElementById("fileselect").files = ev.dataTransfer.files;
+        return false;
+      };
+
+      $(document).ready(function() {
+        $('#infobox').hide();
+        $('.confirm').hide();
+        $('#qimg').click(function(){
+          $('#infobox').toggle();
+        });
+        $("li#CreateProject").addClass("previous")
+        $("li#CreateProject").addClass("visited")
+        $("li#Upload").addClass("active")
+        $("li#CreateSet").addClass("next")
+      });
+
+      // Enable button only after images have been selected.
+      $('input:file').on("change", function() {
+        $('#submit').prop('disabled', false); 
+      });
+
+      $('.confirm button').click(function() {
+        $('.confirm').hide()
+        $('body > *').css({'opacity': '1', 'pointer-events':'auto'})
+      })
+   
+  // Footer
+  include ../includes/footer.jade

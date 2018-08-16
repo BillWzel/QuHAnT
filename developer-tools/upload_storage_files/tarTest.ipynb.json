@@ -1,0 +1,119 @@
+{
+ "cells": [
+  {
+   "cell_type": "code",
+   "execution_count": 126,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "# Program to upload __gb in different number of files (using tar) and graphs results\n",
+    "# Uses files in current directory\n",
+    "# Anna Schmidt\n",
+    "\n",
+    "import os\n",
+    "# change directory\n",
+    "filepath = \"/Users/annaschmidt/Desktop/EnSURE/Sample_Images/100MB\"\n",
+    "os.chdir(filepath)"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 127,
+   "metadata": {
+    "collapsed": false,
+    "scrolled": true
+   },
+   "outputs": [],
+   "source": [
+    "# list files and get number of files\n",
+    "files = os.listdir('.')\n",
+    "nI = len(os.listdir('.'))"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 128,
+   "metadata": {
+    "collapsed": false
+   },
+   "outputs": [],
+   "source": [
+    "# loop through total number of files\n",
+    "for i in range(nI):\n",
+    "    # check if temp folder exists, if not: create folder\n",
+    "    if not os.path.exists(\"./temp\"):\n",
+    "        os.mkdir(\"./temp\")\n",
+    "        \n",
+    "    # loop through (total number of files) / (number being tarred)\n",
+    "    num = nI//(i + 1)\n",
+    "    for j in range(num):\n",
+    "        # example: if i = 3, tar 0-2, 3-5, etc\n",
+    "        beg = j * (i + 1)\n",
+    "        end = beg + i\n",
+    "        \n",
+    "        # select files to be tarred and tar them\n",
+    "        filelist = files[beg:end]\n",
+    "        \n",
+    "        j = str(j)\n",
+    "        tar_command = \"tar -czvf ./temp/%s.tar.gz filelist\" % (j)\n",
+    "        os.system(tar_command) # TODO: add time commands on either end\n",
+    "        \n",
+    "        # get size of tarred file\n",
+    "        #size = os.path.getsize('/temp/%s.tar.gz' % (j))\n",
+    "        \n",
+    "    # tarring remaining files\n",
+    "    if (nI % (i + 1)) != 0:\n",
+    "        done = num * (i + 1)\n",
+    "        left = nI - done\n",
+    "        filelist = files[done:(done + left - 1)]\n",
+    "        tar_command = \"tar -czvf ./temp/extra.tar.gz filelist\"\n",
+    "        os.system(tar_command) # TODO: add time commands on either end\n",
+    "        \n",
+    "    # upload files to manta\n",
+    "    upload_command = \"manta-sync ./temp ~~/stor/cors_demo/Jack/Anna\"\n",
+    "    os.system(upload_command)\n",
+    "    # move files to new folder or nah?\n",
+    "    \n",
+    "    # remove temp file\n",
+    "    try:\n",
+    "        os.remove(\"./temp\")\n",
+    "    except OSError:\n",
+    "        pass"
+   ]
+  },
+  {
+   "cell_type": "code",
+   "execution_count": 129,
+   "metadata": {
+    "collapsed": true
+   },
+   "outputs": [],
+   "source": [
+    "# https://github.com/bahamas10/node-manta-sync?"
+   ]
+  }
+ ],
+ "metadata": {
+  "kernelspec": {
+   "display_name": "Python 3",
+   "language": "python",
+   "name": "python3"
+  },
+  "language_info": {
+   "codemirror_mode": {
+    "name": "ipython",
+    "version": 3
+   },
+   "file_extension": ".py",
+   "mimetype": "text/x-python",
+   "name": "python",
+   "nbconvert_exporter": "python",
+   "pygments_lexer": "ipython3",
+   "version": "3.5.1"
+  }
+ },
+ "nbformat": 4,
+ "nbformat_minor": 0
+}

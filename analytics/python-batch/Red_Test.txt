@@ -1,0 +1,2 @@
+Image	# Of Cells	Total Cell Area	Tissue Area	Normalized(Cell/Tissue)
+mp-16-2852_MCT_AgNOR_1098.tif	8	7794.0	503043.0	0.0154937053095

@@ -1,0 +1,12 @@
+INCLUDES=-I/opt/local/include/opencv2 -I/opt/local/include/opencv2/core -I/opt/local/include/opencv2/highgui -I/opt/local/include
+LIBS=-lopencv_core -lopencv_highgui -lz #-lopencv_imgcodecs
+
+example.exe: PSR-Foreground.cpp
+	g++ -o example.exe $(INCLUDES) $(LIBS) PSR-Foreground.cpp
+
+test: example.exe
+	./example.exe
+
+clean:
+	rm -f *.exe
+	rm -f *.txt

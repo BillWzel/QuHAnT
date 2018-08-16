@@ -1,0 +1,37 @@
+doctype html
+html
+  link(rel='stylesheet', type='text/css', href='/css/main.css')
+  include ../includes/header.jade
+
+  a.button.scrolly#button_test(href='#') Click Me
+
+  .confirm
+    h1 Delete Files?
+    p
+      | Once the files are deleted, you will not be able to access them
+      em
+    button#cancel Cancel
+    button#conf(autofocus='') Confirm
+
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $('.confirm').hide()
+    })
+
+    $('#button_test').click(function() {
+      $('.confirm').show()
+      $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'});
+    })
+
+    $('#cancel').click(function() {
+      $('.confirm').hide()
+      $('#button_test').html('CANCELLED')
+      $('body > *').css({'opacity': '1', 'pointer-events': 'auto'});
+    })
+  
+    $('#conf').click(function() {
+      $('.confirm').hide()
+      $('#button_test').html('CONFIRMED')
+      $('body > *').css({'opacity': '1', 'pointer-events':'auto'});
+    })

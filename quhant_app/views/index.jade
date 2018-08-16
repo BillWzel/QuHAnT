@@ -1,0 +1,186 @@
+// Code Review 07/22/16 - Daria Tarasova - Anna Schmidt - Jingyi Liu
+
+doctype html
+//
+  Photon by HTML5 UP
+  html5up.net | @n33co
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+html
+  style.
+    .inner sub {
+      font-size: 0.6em;
+    }
+
+    .container {
+      padding-right: 10%;
+      padding-left: 10%;
+    }
+
+    .container header.major {
+      text-align: center;
+    }
+ 
+    section#two.main.style2.special {
+      padding-left: 5%;
+      padding-right: 5%;
+    }
+
+    .newsbox {
+      display: inline-block;
+      width: 20em;
+      height: 13em;
+      margin-top: 3em;
+      background: #FFFFFF;
+      opacity: 0.8;
+      margin-left: 3em;
+      margin-right: 3em;
+      border: 1.4px solid #000000;
+      vertical-align: top;
+      -webkit-border-top-left-radius: 15px;
+      -webkit-border-top-right-radius: 15px;
+      -webkit-border-bottom-left-radius: 15px;
+      -webkit-border-bottom-right-radius: 15px;
+      -moz-border-radius-topleft: 15px;
+      -moz-border-radius-topright: 15px;
+      -moz-border-radius-bottomleft: 15px;
+      -moz-border-radius-bottomright: 15px;
+      border-top-left-radius: 15px;
+      border-top-right-radius: 15px;
+      border-bottom-left-radius: 15px;
+      border-bottom-right-radius: 15px;
+    }
+    #newstitle {
+      color: #000000;
+      font-size: 1.3em;
+      padding-top: 0.2em;
+    }
+
+    #newslist {
+      color: #000000;
+      text-align: left;
+      padding-left: 5%;
+      padding-right: 5%;
+      list-style: none;
+      font-size: 0.8em;
+      line-height: 100%;
+    }
+
+    #newslist:hover a {
+      color: blue;
+    }
+    .newsbox a:hover: {
+      color:blue;
+    }
+
+    #browserWarning {
+      //position: relative;
+      top: 0px;
+      width: 100%;
+      height: 20%;
+      background-color: #FFFF7B;
+      font-size: 0.5em;
+      text-align: center;
+    }
+
+  // Links to css files
+  head
+    title QuHAnT
+    link(rel='shortcut icon', type='image/x-icon', href='favicon.ico')
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    meta(name='description', content='An automated quantitative histology analysis tool for improving the reliability of safety testing.')
+    meta(name='keywords', content='quhant, histology, pathologists, image analysis tool, quantitative')
+    //if lte IE 8
+      script(src='js/ie/html5shiv.js')
+    link(rel='stylesheet', type='text/css', href='css/main.css')
+    //if lte IE 8
+      link(rel='stylesheet', href='css/ie8.css')
+    //if lte IE 9
+      link(rel='stylesheet', href='css/ie9.css')
+    //if gt IE 6
+
+  body
+    // Header
+    #browserWarning
+      h1
+        | You are using an unsupported browser. Please update your browser for the best user experience.
+
+    section#header
+      .inner
+        span.icon.major.fa-cloud
+        h1
+          | Welcome to 
+          strong QuHAnT
+          sub Beta 
+          |  Histology Analysis Tool
+          br
+          | 					Improving Chemical Safety Testing .
+        p
+          | An automated quantitative histology analysis tool
+          br
+          | 					for improving the reliability of safety testing.
+        ul.actions
+          li
+            a.button.scrolly(href='/users/login') Login 
+            a.button.scrolly(href='/users/signup') Sign Up
+    // One
+    section#one.main.style1.special
+    .container
+
+      header.major
+        h2 About QuHAnT 
+      p
+        | The Quantitative Histological Analysis Tool (QuHAnT) tool was developed at Michigan State University in order to increase the accuracy, reliability, and efficiency of histological evaluations in a non-clinical setting. As whole slide imaging techniques improve, our goal is to leverage technological advances to improve human and environmental health. Development of this software was made thanks to the Michigan Translational Research and Commercialization (MTRAC) program and is powered by Joyent cloud services. For more technical information on the software, please take a look at our 
+        a(href='https://www.ncbi.nlm.nih.gov/pubmed/25274660') original publication
+        | .
+        br
+        br
+
+    section#two.main.style2.special
+      .newsbox
+        h1#newstitle
+          | Recent Publications
+        li#newslist
+          a(href='https://www.ncbi.nlm.nih.gov/pubmed/25274660') Development of a computational high-throughput tool for the quantitative examination of dose-dependent histological features.
+
+      .newsbox
+        h1#newstitle
+          | News
+        li#newslist
+          | The QuHAnT software has been publically released on October 14, 2016. The beta version is available to everyone. We are actively monitoring and fixing bugs. Please feel free to contact us if you have any questions, comments, suggestions or problems with the website.
+          br
+          br
+          | Thank you,
+          br
+          | The QuHAnT Team
+    
+
+    // Footer
+    section#footer
+      li
+        a.icon.alt.fa-envelope(href='/users/contact')
+          span.label Email
+
+      ul.copyright
+        li © QuHAnT
+
+    // Scripts
+    // Needed for fading and transition of header
+    script(src='js/jquery.min.js')
+    script(src='js/jquery.scrolly.min.js')
+    script(src='js/skel.min.js')
+    script(src='js/util.js')
+    //if lte IE 8
+      script(src='js/ie/respond.min.js')
+    script(src='js/main.js')
+    script.
+      $(document).ready(function() {
+        $('#browserWarning').hide()
+        var div = document.createElement("div");
+        div.innerHTML = "<!--[if lte IE 10]><i></i><![endif]-->";
+        var isIeLessThan9 = (div.getElementsByTagName("i").length == 1);
+        if (isIeLessThan9) {
+          $('#browserWarning').show()
+        }
+      })
+

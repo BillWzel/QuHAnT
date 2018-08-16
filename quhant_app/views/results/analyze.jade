@@ -1,0 +1,205 @@
+// Code Review 07/25/16 - Daria Tarasova - Jingyi Liu - Anna Schmidt
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+
+  style.
+    #main {
+      padding-left: 10%;
+    }
+
+  .confirm#fail
+    h1 Failed
+    p 
+      em
+    button#fail_ok(autofocus='') Okay
+
+  .confirm#check_analyze
+    h1 Analysis summary:
+    p#confirmtext
+      em
+    button#cancel Cancel
+    button#conf(autofocus='') Confirm
+
+  .confirm#zero_img
+    h1 No images in set
+    p
+      | The submitted set is empty. Return back to "Select New Set".
+      em
+    button#zero_ok(autofocus='') Okay
+
+  #main
+    #exists
+      h3
+        | Select project for choosing set: 
+        select#proj(name='project')
+          for item in projects
+            option(value=item.project) #{item.project}
+      h3
+        | Select set for analysis: 
+        select#sets(name='set')
+      
+      h3
+        | Select analysis module: 
+        select#list(name='module')
+          for item in modules
+            option(value=item) #{item}
+
+      #estimated_cost
+
+      h3
+        input(name='select_analysis', id='analyze', onclick='analyze()', type='submit', value='Analyze')
+
+
+  script(language='javascript').
+    (function(){
+      var bOptions = {}
+      var pjt = !{JSON.stringify(projects)}
+
+      for (i in pjt) {
+        bOptions[pjt[i].project] = pjt[i].sets
+      }
+      var A = document.getElementById('proj');
+      var B = document.getElementById('sets');
+      A.onchange = function(){
+        B.length = 0;
+        var _val = this.options[this.selectedIndex].value;
+        for ( var i in bOptions[_val]){
+          var op = document.createElement('option');
+          op.value = bOptions[_val][i];
+          op.text = bOptions[_val][i];
+          B.appendChild(op);
+        }
+      };
+      A.onchange();
+    })();
+
+    // This function is initiated by the submit button
+    function analyze() {
+      $('#analyze').hide()
+      var project = document.getElementById('proj').value
+      var set = document.getElementById('sets').value
+      var module = document.getElementById('list').value   
+
+      $.ajax({
+        url: '/analyze/checkSubmitted',
+        type: 'post',
+        data: {proj: project, sets: set, mod: module},
+      }).done( function(output) {
+        var Summary = output.split(',')
+        
+        if (Summary[0] == 0) {
+          $('#zero_img').show()
+          $('#zero_ok').css({'width':'100%'})
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+        } else {
+          $('#confirmtext').html('Set <b>' + Summary[5] + '</b> has been submitted for analysis using the <b>' + module + '</b> module. There are <b>' + Summary[0] + '</b> images in your set, <b>' + Summary[2] + '</b> of which have been analyzed. Analysis of the remaining <b>' + Summary[1] + '</b> will cost <b>$' + (Math.round(Summary[4] *100)/100).toFixed(2) + '</b> of <b>$' + #{chargecode.balance.toFixed(2)} + '</b> available on charge code <b>' + Summary[3] + '</b>. To continue with the analysis, select <b>CONFIRM</b>.')
+          $('#check_analyze').show() 
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+        }
+      }).fail( function() {
+        $('#fail').show()
+        $('#fail_ok').css({'width':'100%'})
+        $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+      })
+    }
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $('#samplewarning').hide()
+      $('#fail_ok').click(function() {
+        $('#fail').hide()
+        $('body > *').css({'opacity':'1', 'pointer-events':'auto'})
+        $('#analyze').show()
+        location.reload()
+      }) 
+      $('#zero_ok').click(function() {
+        $('#zero_img').hide()
+        $('body > *').css({'opacity':'1', 'pointer-events':'auto'})
+        $('#analyze').show() 
+      }) 
+
+      $('#cancel').click(function() {
+        $('#check_analyze').hide()
+        $('body > *').css({'opacity':'1', 'pointer-events': 'auto'})
+        $('#analyze').show()
+        $.ajax({
+          url: '#',
+          type: 'post',
+        }).done( function() {
+          $(location).attr('href','/analyze/analyze')
+        })
+      })
+
+      // RN: can we add the charge and charge-code to the data here?
+      $('#conf').click(function() {
+        var project = document.getElementById('proj').value
+        var set = document.getElementById('sets').value
+        var module = document.getElementById('list').value
+        // TODO check if work
+        console.log('comment this section if error')
+        $('#cancel').prop('disabled', true)
+        $('#conf').prop('disabled', true)
+        $.ajax({
+          url: '/analyze/analyze_set',
+          type: 'post',
+          data: {project: project, set: set, module: module},
+        }).done( function() {
+          $(location).attr('href', '/analyze/results')
+        })
+      })    
+
+      $("li#CreateProject").addClass("visited")
+      $("li#Upload").addClass("visited")
+      $("li#CreateSet").addClass("previous")
+      $("li#CreateSet").addClass("visited")
+      $("li#AnalyzeSet").addClass("active")
+      $("li#Display").addClass("next")
+      $('.confirm').hide()
+
+      var project = document.getElementById('proj')
+      if(!project.value) {
+        //$('#exists').hide()
+        $('#exists').html('There are no existing projects. Try uploading images first.')
+        $('#exists').css('text-align','center')
+      }
+      var sessin = '#{local}'
+      var sessinfo = $.parseJSON(sessin.replace(/&quot;/g,'"'))
+      var listA = document.getElementById('proj')
+      var listB = document.getElementById('sets')
+      if (sessinfo.project_name == null) {
+        listA.selectedIndex=0
+      } else {
+        for (var opt = 0; opt<listA.length; opt++) {
+          if (listA[opt].text == sessinfo.project_name) {
+            listA.selectedIndex = opt
+            document.getElementById('proj').onchange()
+            setTimeout(function() {
+              var listB = document.getElementById('sets')
+              if (sessinfo.set_name == null) {
+                listB.selectedIndex=0
+              } else {
+                for (var opt = 0; opt<listB.length; opt++) {
+                  if (listB[opt].text == sessinfo.set_name) {
+                    listB.selectedIndex = opt
+                  }
+                }
+              }
+
+            }, 500)
+          }
+        }
+      }
+       
+      if (sessinfo.sampleproj) {
+        $('#samplewarning').show()
+      }
+      $('a#changestat').click(function() {
+        $.ajax({type: 'post', url: '/images/changemode'}).done(function() { $(location).attr('href', '/analyze/analyze') })
+      })
+    })
+
+  // Footer
+  include ../includes/footer.jade

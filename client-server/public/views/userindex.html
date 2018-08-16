@@ -1,0 +1,189 @@
+<!DOCTYPE HTML>
+<!--
+	Photon by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>QuHAnT</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css">
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+	</head>
+	<body onload="hideButton()">
+
+		<!-- Header -->
+			<section id="header">
+				<div class="inner">
+					<span class="icon major fa-cloud"></span>
+					<h1><strong>QuHAnT</strong></h1>
+					<ul class="actions">
+						<li><a href="index.html" class="button scrolly">Home Page</a></li>
+					</ul>
+				</div>
+			</section>
+
+		<!-- One -->
+			<section id="one" class="main style1 special">
+				<div id="dropsite">
+					<header class="major">
+						<h2>You are working on project <span id="displayName"><%=displayName%>. Please select files for analysis</h2>
+					</header>
+					<p>Drop files for upload here or use choose file button to find files</p>
+					<form enctype="multipart/form-data">
+						<input id="fileselect" name="file" type="file" multiple="multiple" accept="image/jpeg" />
+					</form>
+				</div>
+
+				<div id="loadings">
+					<header class="major">
+					</header>
+					<img src="imgs/loadingSymbol.gif" style="height: 300px; width: 300px;"/>
+					<p> Uploading images... This could take several minutes if you've submitted a large number of images. </p>
+				</div>	
+
+				<div id="fnum">
+
+				</div>					
+				
+				
+			<!-- <button id="submit" onclick = "uploadFiles()" >Upload</button> -->
+				<button id="submit" onclick = "imgupload()">Upload</button>
+				<form method="post" action="/review">
+				<input id="rev" type="submit" name="submit" value="Check Upload Status"/>
+				</form>
+				<!-- <form method="post" action="/useexamp">
+				<input id="useexamp" type="submit" name="submit" value="Use Sample Data"/>
+				</form> -->
+				
+				
+				<div class="progress">
+    					<div id="prog" class="progress-bar progress-bar-striped active" role="progressbar" aria-valuemin="0" aria-valuemax="100" style="width:0%">
+  					</div>
+  				</div>
+				
+			</section>
+
+		<!-- Footer -->
+			<section id="footer">
+				<ul class="icons">
+					<!-- <li><a href="#" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-github"><span class="label">GitHub</span></a></li> -->
+					<li><a href="#" class="icon alt fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+				<ul class="copyright">
+					<li>&copy; QuHAnT</li>
+				</ul>
+			</section>
+
+		<!-- Scripts -->
+			<script src="assets/js/jquery.min.js"></script>
+			<script src="assets/js/jquery.scrolly.min.js"></script>
+			<script src="assets/js/skel.min.js"></script>
+			<script src="assets/js/util.js"></script>
+			<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+			<script src="assets/js/main.js"></script>
+			<script src="http://code.jquery.com/jquery-1.10.0.min.js" language="javascript"></script>
+			<!-- <script src="http://code.jquery.com/ui/1.10.3./jquery-ui.min.js" language="javascript"></script> -->
+			<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+			<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+		        
+			<!--NEWNEWNEW -->
+                        <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js"></script>
+                        <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js"></script>
+
+
+	<script language="javascript">
+	//Hides loading elements upon page loading
+	function hideButton() {
+		$("#rev").hide()
+		$("#loadings").hide();
+		$("prog").hide();
+	};
+	
+	//initiates file uploading and allows user to move to the next step. 10 seconds per image is provided to ensure upload on slower connection.
+	function imgupload() {
+		var filedata = document.getElementById("fileselect").files;
+		var upTime= filedata.length * 1000
+		var d = new Date()
+		for (i=0; i < filedata.length + 1; i++) {
+			if (i != filedata.length) {
+			var file = filedata[i];
+			var fname = filedata[i].name;
+			signfiles(file,fname);	
+			} else {
+			setTimeout(function(){
+				$("#rev").show();
+				$("#loadings").hide();
+			},upTime)
+			$("#submit").hide();
+			$("#dropsite").hide();
+			$("#loadings").show();
+			$("#useexamp").hide();
+			};
+		};
+		setTimeout(function(){
+			progbar(d,upTime);
+		},1000);
+	};
+	
+	//This is the image submit function  
+	function signfiles(file,fname) {
+		    $.ajax({
+               	url: 'sign',
+	            type: 'post',
+        	    data: {file: fname},
+			}).done(function (signature) {
+				var xhr = new XMLHttpRequest();
+				xhr.open('PUT', signature.url, true);
+				xhr.setRequestHeader('accept', 'application/json');
+				xhr.setRequestHeader('access-control-allow-origin', '*');
+				xhr.setRequestHeader('content-type', 'image/jpeg');
+				xhr.send(file);
+			}).fail(function () {
+				alert('failed to create signature for ' + fname);
+			});
+		};
+	// end of image submit function
+
+
+	//progress bar
+	function progbar(date,millisecond) {
+		var n = new Date(date.getTime() + millisecond);
+		$("prog").show()
+		var itnum = 0
+		//while (date < n) {
+		setInterval(function(){
+		itnum = itnum + 1;
+		var prog= ((itnum*10000)/millisecond)*100
+		if (prog >= 102) {
+			clearInterval(interval);
+		};
+		//document.getElementById("demo").innerHTML = prog
+		document.getElementById("prog").style.width= prog + "%";
+                document.getElementById("prog").innerHTML = Math.round(prog) + "%";
+		},10000);
+		//}
+	}
+
+	
+	// start of dropsite function
+	var dropsite = document.getElementById("dropsite");
+	dropsite.ondragover = function() { return false; };
+	dropsite.ondragend = function() { return false; };
+	dropsite.ondrop = function(ev) {
+		ev.stopPropagation(); ev.preventDefault();
+		document.getElementById("fileselect").files = ev.dataTransfer.files;
+		return false;
+    	};
+	// end of dropsite function	  
+    	</script>
+	</body>
+</html>

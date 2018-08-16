@@ -1,0 +1,33 @@
+cp ../client_key.pub ~/.ssh/
+
+echo "export MANTA_URL=https://us-east.manta.joyent.com" >> $HOME/.bash_profile
+echo "export MANTA_USER=billwzel" >> $HOME/.bash_profile
+echo "export MANTA_KEY_ID=$(ssh-keygen -l -f $HOME/quhant-joyent/client_key.pub | awk '{print $2}')" >> $HOME/.bash_profile
+
+npm install
+npm install -g manta-sync
+npm install -g standard
+npm install forever
+
+sed -i 's=express/node_modules/connect=connect=' node_modules/express.io/lib/index.coffee
+
+source ~/.bash_profile
+
+manta-sync -x '*.tif' -x '*.sw*' -x '*.swa' -x '*.swb' -x '*.swc' -x '*.swd' -x '*.swe' -x '*.swf' -x '*.swg' -x '*.swh' -x '*.swi' -x '*.swj' -x '*.swk' -x '*.swl' -x '*.swm' -x '*.swn' -x '*.swo' -x '*.swp' -x '*.swq' -x '*.swr' -x '*.sws' -x '*.swt' -x '*.swu' -x '*.swv' -x '*.sww' -x '*.swx' -x '*.swy' -x '*.swz' -r ~~/stor/cors_demo/ public/cors_demo/
+
+manta-sync -r ~~/stor/db public/db/
+
+bash create_symlinks.sh
+
+# TODO: create crontab to delete extra user-specific sampletest .sets
+
+crontab -l > mycron
+echo "0 4 * * * bash $PWD/storage-costs.sh $PWD/" >> mycron
+echo "0 6 * * * find $PWD/public/db/*sign_up.json -mtime +2 -exec rm {} \;" >> mycron
+echo "0 6 * * * find $PWD/public/db/*recovery.json -mtime +2 -exec rm {} \;" >> mycron
+echo "20 * * * * bash $PWD/delete-remaining.sh $PWD >> $PWD/Monitoring/deleteproj.log 2>&1" >> mycron
+echo "10 * * * * manta-sync public/db/ ~~/stor/db/ >> $PWD/Monitoring/sync-sync.log 2>&1" >> mycron
+crontab mycron
+rm mycron
+
+echo -e "\n\n\n\n\n\n\n\n\n\n enter the following command:\n source $HOME/.bash_profile\n\n\nThen run ./startapp to start the app and use manage_services to manage the services.\n\n\n\n\nHave Fun!"

@@ -1,0 +1,90 @@
+<!DOCTYPE HTML>
+<!--
+	Photon by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>QuHAnT</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+		
+		<!-- Scripts -->
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/skel.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<!--[if lte IE 8]><script src="assets/js/ie/respond.min.js"></script><![endif]-->
+		<script src="assets/js/main.js"></script>
+		<script src="http://code.jquery.com/jquery-1.10.0.min.js" language="javascript"></script>
+		<!--<script src="http://code.jquery.com/ui/1.10.3./jquery-ui.min.js" language="javascript"></script> -->
+		<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+
+		<script language="javascript">
+		var socket = io.connect();	
+			$(document).ready(function(){
+				// Listen for the talk event.
+				socket.on('project', function(data) {
+					setTimeout(function(){
+					var select = document.getElementById('list');
+					select.options[select.options.length] = new Option(data.value, data.value);
+					},100);
+				});
+			});
+    </script>
+	</head>
+	<body onload="hideButton()">
+
+		<!-- Header -->
+			<section id="header">
+				<div class="inner">
+					<span class="icon major fa-cloud"></span>
+					<h1><strong>QuHAnT</strong></h1>
+					<ul class="actions">
+						<li><a href="index.html" class="button scrolly">Home Page</a></li>
+					</ul>
+				</div>
+			</section>
+
+		<!-- One -->
+			<section id="one" class="main style1 special">
+				<div id="projectlisting">
+					<header class="major">
+						<h2>Welcome <span id="displayName"><%=displayName%>!, Enjoy Submitting Files!</h2>
+					</header>
+					<p>select existing project (projects are saved for 48 hours)</p>
+
+					<form name="prjsold" method="post" action="/prjselect_old">						
+						<select name="list" id="list"></select>
+						<input id='prjselect_old' type="submit" name="prjselect_old" value="Select Project Number"/>
+					</form>
+					<p>or create new project</p>
+					<form name="prjsnew" method="post" action="/prjselect_new">
+						New Project ID: <input type="text" name="fname">
+						<input id = 'prjselect_new' name="prjselect_new" type="submit" value="Upload Images">
+					</form>
+					</div>
+				
+			</section>
+
+		<!-- Footer -->
+			<section id="footer">
+				<ul class="icons">
+					<li><a href="#" class="icon alt fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+				<ul class="copyright">
+					<li>&copy; QuHAnT</li>
+				</ul>
+			</section>
+
+
+	</body>
+</html>

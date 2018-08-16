@@ -1,0 +1,10 @@
+BB-4,BB-3 ,BB-2 ,BB-1 ,Cen-Y ,Cen-X ,Area ,File ,Set,Project
+2,4,430,853,431,855,11,rance/DataTest/Image1,DataTest_verified,DataTest
+3,3,905,253,906,254,9,rance/DataTest/Image2,DataTest_verified,DataTest
+2,4,1010,640,1010,642,6,rance/DataTest/22_Default_001_082_Image,DataTest_verified,DataTest
+2,3,762,552,762,553,9,rance/DataTest/22_Default_001_084_Image,DataTest_verified,DataTest
+3,2,823,1228,824,1229,9,rance/DataTest/22_Default_001_085_Image,DataTest_verified,DataTest
+2,2,1011,398,1011,399,6,rance/DataTest/22_Default_001_086_Image,DataTest_verified,DataTest
+2,4,1010,640,1010,642,6,rance/DataTest/Image3,DataTest_verified,DataTest
+3,3,905,253,906,254,9,rance/DataTest/22_Default_001_087_Image,DataTest_verified,DataTest
+2,4,430,853,431,855,11,rance/DataTest/22_Default_001_088_Image,DataTest_verified,DataTest

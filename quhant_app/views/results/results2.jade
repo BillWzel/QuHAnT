@@ -1,0 +1,174 @@
+// Code Review 07/25/16 - Daria Tarasova - Jingyi Liu - Anna Schmidt
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+  //include ../includes/buttons.jade
+
+  style.
+    h1 {
+      text-align: center;
+    }
+    h3 {
+      text-align: center;
+    }
+    a#check {
+      //color: #57aed1;  
+      color: #8bc53f;
+      font-weight: bold;
+    }
+    a#check:hover {
+      color: #6bd4c8;
+    }
+    #button {
+      text-align: center;
+      vertical-align: middle;
+      margin: auto;
+    }
+    #samplewarning {
+      background-color: #ffa8a8;
+    }
+    #samplewarning  h1 {
+      color: black;
+      margin 0 0;
+      padding: 0 0;
+      height: 30;
+      font-size: 0.85em;
+    }
+    #loading {
+      width: 50%;
+      position: fixed;
+      top: 30%;
+      left: 40%;
+    }
+
+  #samplewarning
+    h1
+      img(src='/img/warning-yellow-icon-9.png', id='sampwarn', height=22)
+      |  You are currently in Sample Project mode. To return to normal mode, 
+      a(href='#' id='changestat') click here.
+
+  .confirm
+    h1 No sets selected
+    p
+      | Please select at least one set
+      em
+    button#ok(autofocus='') Okay
+
+  #loading(style='display:none')
+    img(src='/img/loadingSymbol.gif')
+
+  #exists
+    h3
+      for item in sets
+        br
+        strong Project
+        |            
+        | #{item[2]}
+        |       
+        strong Set
+        |               
+        | #{item[3]}
+        |         
+
+        if item[0] > 0
+          img(src='/img/Error-128.png', alt='errors', width='16', height='16')
+          a(href='mailto:quhant@gmail.com?subject=Analysis error&body=User,date,projectname,setname') report error
+          br
+        else if item[1] == 'running'
+          img(src='/img/loadingSymbol.gif' alt='running', width='16', height='16')
+          a#check(href='/analyze/results') check status
+          br  
+        else if item[0] == 0
+          input(type="checkbox", id='sets', name=item[2]+'/'+item[3], checked=false)
+          br
+
+    div#button
+      input(type='checkbox', id = 'metadata', name='metadata', checked=false)
+      |  Skip metadata upload step
+      br
+      button(onclick='check()') Next
+    br
+    br
+
+  script.
+    $(document).ready(function(){
+   
+      if ('#{sets}'.length == 0) {
+        $('#exists').html('There are no existing projects. Try uploading images first.')
+        $('#exists').css('text-align','center')
+      }
+
+      $("#samplewarning").hide()
+      $("li#CreateProject").addClass("visited")
+      $("li#Upload").addClass("visited")
+      $("li#CreateSet").addClass("visited")
+      $("li#AnalyzeSet").addClass("visited")
+      $("li#AnalyzeSet").addClass("previous")
+      $("li#Display").addClass("active")
+      $("li#Metadata").addClass("next")
+      $('.confirm').hide()
+     
+      var sessin = '#{local}'
+      var sessinfo = $.parseJSON(sessin.replace(/&quot;/g,'"'))
+      if (sessinfo.sampleproj) {
+        $('#samplewarning').show()
+        $('#sampletext').show()
+      }
+      $('a#changestat').click(function() {
+        $.ajax({
+          type: 'post', 
+          url: '/images/changemode'
+        }).done(function() {
+          $(location).attr('href', '/analyze/results')
+        })
+      })
+    });
+
+    function check() {
+      var inputs = document.getElementsByTagName("input")
+      var resultsList = []
+      for (var i = 0; i < inputs.length; i++) {
+        if (inputs[i].type == "checkbox" && inputs[i].checked == true && inputs[i].id == 'sets') 
+          resultsList.push(inputs[i].name)
+      }
+      var meta = document.getElementById('metadata').checked
+      if (resultsList.length > 0) {
+        $('#loading').show()
+        $(document.body).css({'pointer-events':'none', 'filter':'blur(2px)'})
+        if (meta == false) {
+          $.ajax({
+            type: 'post',
+            url: '/analyze/metadata',
+            data: {CheckedResults : resultsList},
+          }).done(function(){
+            $(location).attr('href','/analyze/metadata')
+            $(document.body).css({'cursor' : 'default'})
+          }).fail(function() {
+            alert('failed')
+          })
+        } else {
+          $.ajax({
+            type: 'post',
+            url: '/analyze/skip_metadata',
+            data: {CheckedResults : resultsList},
+          }).done(function() {
+            $(location).attr('href','/analyze/disp_results')
+            $(document.body).css({'cursor':'default'})
+          })
+        }
+      } else {
+        $('.confirm').show()
+        $('#ok').css({'width':'100%'})
+        $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+      }
+    };
+
+    $('#ok').click(function() {
+      $('.confirm').hide()
+      $('body > *').css({'opacity': '1', 'pointer-events':'auto'})
+    })
+
+  // Footer
+  include ../includes/footer.jade

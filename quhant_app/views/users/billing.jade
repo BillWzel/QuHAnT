@@ -1,0 +1,382 @@
+doctype html
+//
+  Photon by HTML5 UP
+  html5up.net | @n33co
+  Free for personal and commercial user under the CCA 3.0 license (html5up.net/license)
+html
+  include ../includes/header.jade
+
+  style.
+    h1 {
+      text-align: center;
+    }
+    h4 {
+      padding-left: 15%;
+    }
+    h3 {
+      padding-left: 10%;
+    }
+    h5 {
+      padding-left: 5%;
+    }
+    table #ccodetable {
+      margin-left: 5%;
+      margin-right: 5%;
+    }
+    button {
+      width: 8%;
+      font-size: 12px;
+    }
+    .post {
+      display: none;
+    }
+    span:hover {
+      cursor: pointer;
+    }
+    .GiftCodeBox {
+      padding-left: 10%;
+      padding-right: 10%;
+    }
+    #validatecode {
+      padding-top: 0;
+      margin-top: 0;
+      font-size: 0.7em;
+    }
+
+  .Title
+    h1
+      | User Profile Settings & Billing Information
+
+  .confirm
+    h1 Must be a valid e-mail address
+    p
+      | Must contain '@' 
+      em
+    button#conf(autofocus='') Okay
+
+  .main
+    h3
+      b User Details  
+      b#user-icon-plus 
+        span.icon.fa-plus-square-o
+      b#user-icon-minus
+        span.icon.fa-minus-square-o
+    .UserElement
+      #user
+        h4
+          b Name: 
+          | #{user_array.displayName}
+          |  
+          br 
+          b User Name: 
+          | #{user_array.username}
+          br
+          #start
+            b Email: 
+            | #{user_array.emails}
+            button#changeEmail(onclick='change_email()') Update
+          #email(style="display:none")
+            b Email: 
+            input(required='', type='email', id='em', name='email', value='', placeholder='#{user_array.emails}')
+            button(onclick='submit_new_email()') Change
+            #email_feedback  
+          b Password:
+          button#resetPassword(onclick='reset_password()') Update
+          #password(style="display:none")
+            input(pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}", title="Must Contain At Least 1 Number and 1 Uppercase and Lowercase Letter and At Least 8 Characters.", required='', type='password', name='password', id='pass', value='', placeholder='New Password')
+            br
+            input(pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}", title="Must Contain At Least 1 number and 1 Uppercase and Lowercase Letter and At Least 8 Characters.", required='', type='password', name='confirmPassword', id='confirm_pwd', value='', placeholder='Confirm Password')
+            br
+            button(onclick='submit_new_password()') Change
+            #password_verify
+  .main
+    h3
+      b Billing Information  
+      b#bill-icon-plus
+        span.icon.fa-plus-square-o
+      b#bill-icon-minus
+        span.icon.fa-minus-square-o
+    .UserElement
+      #bill
+        button#editBill(onclick='edit_billing()') Edit
+        h4
+          .pre
+            b Address 1: 
+            | #{user_array.address_1}
+          .post
+            b Address 1: 
+            input(type='text', name='address1', id='address1', value='#{user_array.address_1}')
+
+          .pre
+            b Address 2: 
+            |#{user_array.address_2}
+          .post
+            b Address 2: 
+            input(type='text', name='address2', id='address2', value='#{user_array.address_2}')
+          .pre
+            b City: 
+            |#{user_array.city}
+          .post
+            b City: 
+            input(type='text', name='city', id='city', value='#{user_array.city}')
+          .pre
+            b State: 
+            | #{user_array.state}
+          .post
+            b State: 
+            input(type='text', name='state', id='state', value='#{user_array.state}')
+          .pre
+            b ZIP Code: 
+            | #{user_array.zip}
+          .post
+            b ZIP Code: 
+            input(type='text', name='zip', id='zip', value='#{user_array.zip}')
+          .pre
+            b Country: 
+            | #{user_array.country}
+          .post
+            b Country: 
+            input(type='text', name='country', id='country', value='#{user_array.country}')
+          .pre
+            b Phone Number: 
+            | #{user_array.phone}
+          .post
+            b Phone Number: 
+            input(type='text', name='phone', id='phone', value='#{user_array.phone}')
+          .pre
+            b Subscribed to Newsletter: 
+            | #{user_array.newsletter}
+          .post
+            b Subscribed to Newsletter: 
+            input(type='text', name='newsletter', id='newsletter', value='#{user_array.newsletter}')
+          .post
+            button(onclick='edit_address()') Change
+            #address_feedback
+
+   
+  .main  
+    h3
+      b Charge Code Details  
+      b#charge-icon-plus
+        span.icon.fa-plus-square-o
+      b#charge-icon-minus
+        span.icon.fa-minus-square-o
+    .GiftCodeBox
+      h3
+        form(onsubmit='subcode(); return false;')
+          input(required='', type='text', id='incode', value='', placeholder='Code')
+          input(type='button', id='validatecode', value='Apply Gift Code')
+      p#success
+
+    .UserElement
+      #charge
+        .SummaryTable
+          table#charge(style='width:100%')
+            tr
+              th In Use
+              th Name
+              th Total Value
+              th Amount Used
+              th Balance
+              th Expiration Date
+            for item in charge_array
+              tr 
+                td
+                   input(type='radio', name='selected_account', id='#{item.Code}')
+                td #{item.description}
+                td $#{item.value}
+                td $#{item.charges.toFixed(2)}
+                td $#{item.balance.toFixed(2)}
+                td #{item.dateExpired}
+          h5
+            | To obtain a charge code for your analyses,  
+            a(href='/company/contact_us') click here 
+            | to contact us.
+  
+     
+  script(language='javascript').
+    var socket = io.connect()
+    $(document).ready(function() {
+      // Hide all collapse icons
+      $('#user-icon-minus').hide()
+      $('#user').hide()
+      $('#bill-icon-minus').hide()
+      $('#bill').hide()
+      $('#charge-icon-minus').hide()
+      $('#charge').hide()
+      $('.confirm').hide()
+      $('.GiftCodeBox').hide()
+
+      // Toggle tasks
+      $('#user-icon-plus').click(function () {
+        $('#user-icon-plus').hide()
+        $('#user-icon-minus').show()
+        $('#user').show()
+      })
+      $('#user-icon-minus').click(function () {
+        $('#user-icon-minus').hide()
+        $('#user-icon-plus').show()
+        $('#user').hide()
+      })
+      $('#bill-icon-plus').click(function () {
+        $('#bill-icon-plus').hide()
+        $('#bill-icon-minus').show()
+        $('#bill').show()
+      })
+      $('#bill-icon-minus').click(function () {
+        $('#bill-icon-minus').hide()
+        $('#bill-icon-plus').show()
+        $('#bill').hide()
+      })
+      $('#charge-icon-plus').click(function () {
+        $('#charge-icon-plus').hide()
+        $('#charge-icon-minus').show()
+        $('#charge').show()
+        $('.GiftCodeBox').show()
+      })
+      $('#charge-icon-minus').click(function () {
+        $('#charge-icon-minus').hide()
+        $('#charge-icon-plus').show()
+        $('#charge').hide()
+        $('.GiftCodeBox').hide()
+      })
+
+      $('#conf').click(function() {
+        $('.confirm').hide();
+        $('body > *').css({'opacity': '1', 'pointer-events': 'auto'});
+      })
+
+      $("#"+"#{user_array.current_code}").prop('checked', true)
+
+      socket.on('feedback', function(out) {
+        $('#password_verify').html('Password Successfully Changed')
+        $('#password_verify').css('color', 'green')
+      })  
+
+      socket.on('email_exist', function(out) {
+        if (out.output == 'exist') {
+          $('#email_feedback').html('Email Already In Use')
+          $('#email_feedback').css('color','red')
+        } else {
+          $.ajax({
+            type: 'post',
+            url: '/users/change_email',
+            data: {email: document.getElementById('em').value},
+          }).done( function() {
+          }) 
+        }  
+       })
+
+      socket.on('email_edit', function(out) {
+        $('#email_feedback').html('Email Successfully Changed')
+        $('#email_feedback').css('color','green')
+      })
+
+      socket.on('address_change', function(out) {
+        $('#address_feedback').html('Address Information Successfully Changed')
+        $('#address_feedback').css('color','green')
+      })   
+
+    })
+
+    // Shows e-mail update form
+    function change_email() {
+      $('#start').hide()
+      $('#email').show()
+    }
+    
+    function submit_new_email() {
+      // check that email is not in use
+      var NewEmail = document.getElementById('em').value
+      var atpos = NewEmail.indexOf('@')
+      var dotpos = NewEmail.lastIndexOf('.')
+      if (atpos < 1 || dotpos < atpos+2 || dotpos+2 >= NewEmail.length) {  // Checks that the e-mail is valid
+        $('.confirm').show() 
+        $('#conf').css({'width': '100%'});
+        $('body > *').not('body > .confirm').css({'opacity':'0.5' , 'pointer-events':'none'});
+
+      } else { 
+        $.ajax({
+          type: 'post',
+          url: '/users/check_email',
+          data: {email: document.getElementById('em').value},
+        }).done( function() {
+        })
+      }
+    }
+
+    function reset_password() {
+      $('button#resetPassword').hide()
+      $('#password').show()
+    }
+    
+    function submit_new_password() {
+      // check if passwords are the same
+      var firstPassword = document.getElementById('pass').value
+      var secondPassword = document.getElementById('confirm_pwd').value
+      if (firstPassword != secondPassword) {
+        $('#password_verify').html('Passwords Do Not Match')
+        $('#password_verify').css('color','red')
+      } else {
+        //change password
+        $.ajax({
+          type: 'post',
+          url: '/users/change_password',
+          data: {password: document.getElementById('pass').value},
+        }).done( function() {
+        })
+
+      }
+    }
+
+    function edit_billing() {
+      $('.pre').hide()
+      $('.post').show()
+    } 
+
+    function edit_address() {
+      $.ajax({
+        type: 'post',
+        url: '/users/change_address',
+        data: {add1: document.getElementById('address1').value, 
+               add2: document.getElementById('address2').value, 
+               city: document.getElementById('city').value,
+               state: document.getElementById('state').value,
+               zip: document.getElementById('zip').value,
+               country: document.getElementById('country').value,
+               phone: document.getElementById('phone').value,
+               newsletter: document.getElementById('newsletter').value
+             },
+      }).done( function() {
+      })
+    }
+
+    $('input[type=radio]').on('change', function() {
+      $.ajax({
+        type: 'post',
+        url: '/users/change_code',
+        data: {code: this.id}
+      }).done(function() {
+      })
+    })
+
+    $('#validatecode').click(function() {
+      $.ajax({
+        type: 'post',
+        url: '/users/GiftCode',
+        data: {giftcode: document.getElementById('incode').value},
+      }).done(function(result) {
+        if (result == 'true') {
+          $('p#success').html('Application of code was successful!')
+          $('p#success').css({'color':'green'})
+        } else if (result == 'false') {
+          $('p#success').html('Application of code was unsuccessful.\n Code may have input incorrectly or already been used. Please do not hesitate to contact us if the problem persists')
+          $('p#success').css({'color':'red'})
+        }
+      })
+    })
+
+
+  // Footer
+  include ../includes/footer.jade
+

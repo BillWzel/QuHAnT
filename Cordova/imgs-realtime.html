@@ -1,0 +1,149 @@
+<!DOCTYPE HTML>
+<!--
+	Photon by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>QuHAnT</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="css/main.css" />
+                <link href="another/www/lib/ionic/css/ionic.css" rel="stylesheet">
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+
+		<!-- Scripts -->
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/skel.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		<script src="http://code.jquery.com/jquery-1.10.0.min.js" language="javascript"></script>
+		<script src="http://code.jquery.com/ui/1.10.3./jquery-ui.min.js" language="javascript"></script>
+		<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+		var socket = io.connect();
+		$(document).ready(function(){
+			// Listen for the talk event.
+			socket.on('image', function(data) {
+			    var iDiv = document.createElement('div');
+			    iDiv.id = data.value
+				iDiv.style.width = '500px';
+				iDiv.style.paddingTop='90px';
+				iDiv.style.display= 'inline-block';
+			    document.getElementById('imview').appendChild(iDiv);
+ 			    var par = document.getElementById(data.value);
+		        var img = document.createElement('img');
+        		img.src = data.value
+        		par.appendChild(img);
+			$('#loadings').hide();
+				var tempnum = Math.random()
+			});
+			socket.on('scores', function(score){
+			var para = document.getElementById('imgs/' + score.imname);
+				if (score.metric == 'BAD'){
+					para.innerHTML = para.innerHTML + '<input id="' + score.imname + '" type="checkbox" name="QC" value="' + score.imname + '">'+ score.imname
+				} else if (score.metric == 'GOOD') {
+					para.innerHTML = para.innerHTML + '<input id="' + score.imname + '" type="checkbox" name="QC" value="' + score.imname + '" checked>'+ score.imname
+				} else {
+					para.innerHTML = para.innerHTML + '<p style="margin-bottom: 0px;">' + score.metric + ' : ' + score.value + '</p>'
+				}
+			});	
+		});
+	</script>
+	</head>
+	<body>
+
+		<!-- Header -->
+			<section id="header">
+				<div class="inner">
+                                       <p style="margin-top: -20px;"></p>
+                                   
+                                    <a href="index.html" > <img src="img/home.png" alt="home" height="30" width="30" ></a>
+                                     <p style="margin-top: 30px;"></p>
+					<span class="icon major fa-cloud"></span>
+					
+                                        <script src="js/main.js" type="text/javascript"></script>
+                                    <a href="index.html" class="relative">Home Page</a>
+					<h1><strong>QuHAnT</strong></h1>
+				</div>
+			
+
+		<!-- One 
+			<section id="one" class="main style1 special">-->
+                            <div class="inner">
+				<form method="post" action="/quantitate">	
+
+                                <div id="loadings">
+                                        <header class="major">
+                                        </header>
+                                        <img src="img/loadingSymbol.gif" style="height: 30px; width: 30px;"/>
+                                        <p> Loading... </p>
+                                </div>
+		    
+				<div id="imview">
+					<header class="major">
+					</header>
+				</div>				
+				<select name="module" id="module">
+					<option value="OilRed O">Oil Red O</option>
+					<option value="PicroSirius Red">PicroSirius Red</option>
+					<option value="Inflammation">Inflammation</option>
+					<option value="QCOnly">QC Only</option>
+				</select>
+                                     <p style="margin-top: 10px;"></p>
+                                <a href="disp-results.html" class="button2">Show Results</a>
+                                <p style="margin-top: 10px;"></p>
+                                <a href="showpictures.html" class="button2">Show Pictures</a>
+				<!--<input id="analysis" type="submit" name="submit" value="Analyze"/>-->
+				</form>
+				
+
+
+		<!-- Footer 
+			<section id="footer">-->
+				<ul class="icons">
+					<!-- <li><a href="#" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-github"><span class="label">GitHub</span></a></li> -->
+					<li><a href="#" class="icon alt fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+				
+                                <div class="tabs tabs-icon-left">
+                                        <a class="tab-item">
+                                          <i ><img src="img/home.png" alt="github" height="30" width="30" ></i>
+                                          Home
+                                        </a>
+                                        <a class="tab-item">
+                                          <i ><img src="img/iconfont-wechaticon16-2.png" alt="github" height="30" width="30" ></i>
+                                          Projects
+                                        </a>
+                                        <a class="tab-item">
+                                          <i ><img src="img/ic_local_airport_black_48dp.png" alt="github" height="30" width="30" ></i>
+                                          Pictures
+                                        </a>
+                                        <a class="tab-item">
+                                          <i ><img src="img/ic_local_airport_black_48dp.png" alt="github" height="30" width="30" ></i>
+                                          Analysis
+                                        </a>
+                                        <a class="tab-item">
+                                          <i ><img src="img/ic_local_airport_black_48dp.png" alt="github" height="30" width="30" ></i>
+                                          Logout
+                                        </a>
+                                    </div>
+
+				
+                            </div>
+			</section>
+
+
+
+	</body>
+</html>

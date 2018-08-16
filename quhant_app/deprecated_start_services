@@ -1,0 +1,17 @@
+nohup bash manta_sync.sh > Monitoring/sync.log 2>&1&
+echo $! > Monitoring/sync_id.service
+
+nohup bash fast_QC_manta.sh > Monitoring/quality.log 2>&1&
+echo $! > Monitoring/quality.service
+
+nohup bash billing_storage.sh > Monitoring/billStore.log 2>&1&
+echo $! > Monitoring/billStore.service
+
+nohup bash jobcosts.sh > Monitoring/jobcosts.log 2>&1&
+echo $! > Monitoring/jobcosts.service
+
+crontab -l > mycron
+echo "0 4 * * * $PWD/estimatestoragecost.sh $PWD/" >> mycron
+crontab mycron
+rm mycron
+

@@ -1,0 +1,181 @@
+// Code Review 02/03/17 - Daria Tarasova - Rance Nault
+
+doctype html
+html
+  include ../includes/header.jade  
+  include ../testing/progbar-steps.jade
+  style.
+    #center {
+      paddingTop: 90px;
+      margin: auto;
+      text-align: center;
+      vertical-align: middle;
+    }
+    #center img {
+      padding-top: 50px;
+      width: 75%;
+      margin: auto;
+      text-align: center;
+    }
+    .export {
+      position: fixed;
+      bottom: 40px;
+      right: 20px;
+      height: 50px;
+      display: inline-block;
+      text-align: center;
+      font-size: 13px;
+      text-decoration: none;
+      background-color: rgba(153, 204, 255, 0.80);
+      text-shadow: -1px 1px #417cb8;
+      box-shadow: 0 8px 16px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    }
+    .export:hover {
+      background-color: rgba(102,178,255,0.80);
+    }
+    input {
+      font-weight: bold;
+    }
+    #exportButton {
+      display: none;
+      width: 50%;
+    }
+
+    #total {
+      padding-top: 0;
+      padding-bottom: 0;
+    }
+
+    #doneloading {
+      color: green;
+      font-size: 2em;
+    }
+
+  .Timerbox#loading
+    img(src='/img/loadingSymbol.gif')
+    h4
+      b Results ID: 
+      = job
+      p
+        | Data figures are being generated. This page will automatically refresh when ready.
+      p#inbox
+        | Time elapsed (Average time: 5:07 min): 
+        #total
+      p#stillloading
+        | Status will be verified again in:
+        #checking
+        br
+        | You can always copy the following link and return at a later time.
+        br
+        #link
+      p#doneloading
+        | Images loading...
+
+  .Timerbox#error
+    img(src='/img/Error-128.png', height=30, width=30)
+    h4
+      | There was a problem displaying your results.  
+      a(href='/company/contact_us') Click here 
+      | to report the problem.
+  #total
+  #center
+    #images
+
+    .export(style='display:none')
+      form(method='post', action='/analyze/download')
+        input(type='submit', name='submit', value='Export Results')
+
+    #exportButton
+      form(method='post', action='/analyze/download')
+        input(type='submit', name='submit', value='Export Results')
+
+  // Footer
+  include ../includes/footer.jade
+
+  script(language='javascript').
+    var socket = io.connect();
+    $(document).ready(function() {
+      //$.post('watch_metadata')
+
+      // Progress bar updates
+      $("li#CreateProject").addClass("visited")
+      $("li#Upload").addClass("visited")
+      $("li#CreateSet").addClass("visited")
+      $("li#AnalyzeSet").addClass("visited")
+      $("li#Display").addClass("visited")
+      $("li#Metadata").addClass("visited")
+      $("li#Metadata").addClass("previous")
+      $("li#Export").addClass("active")
+
+      $('#error').hide()
+      $('#doneloading').hide()
+      $('#link').html("<a href='quhant.com/analyze/#{job}'>quhant.com/analyze/#{job}</a>")
+      $('#jobid').html('#{job}') 
+      $.post('watch_folder')
+      socket.on('zipper', function(zip) {
+        $('#loading').fadeOut()
+        $('.export').fadeIn()
+        $('#exportButton').fadeIn()
+        var graph = document.createElement('img')
+        graph.src = zip.value
+        $('div#images').append(graph)
+      })
+
+      result_check(1000) // First refresh wait is 1 second
+
+      // Count-up timer
+      var sec = 0;
+      function pad (val) { return val > 9 ? val : '0' + val;}
+      setInterval(function () {
+        //$('#seconds').html(pad(++sec%60));
+        //$('#minutes').html(pad(parseInt(sec/60,10)));
+        $('#total').html(pad(parseInt(sec/60,10)) + ':' + pad(++sec%60))
+      }, 1000);
+    })
+
+    // Ajax post to check if job is still running
+    function result_check(time_interval) {
+      if (time_interval > 1200000) { // If running more than 20 minutes
+        $('#loading').fadeOut()
+        $('#error').fadeIn()
+      } else {
+        CreateTimer(time_interval)
+        setTimeout( function() {
+          $.ajax({
+            url: '/analyze/checkStatus',
+            type: 'post',
+            data: {job: "#{job}"}
+          }).done( function(output) {
+            if (output == 'running') {
+              result_check(time_interval*2)
+            } else if (output == 'error') {
+              $('#loading').fadeOut()
+              $('#error').fadeIn()
+            } else if (output == 'done') {
+              $('#checking').hide()
+              $('#stillloading').hide()
+              $('#doneloading').show()
+            }
+          })
+        }, time_interval)
+      }
+    }
+
+    function CreateTimer(time_interval) {
+      TotalSeconds = time_interval/1000
+      UpdateTimer()
+      window.setTimeout("Tick()", 1000);
+    }
+    function Tick() {
+      TotalSeconds -= 1;
+      UpdateTimer()
+      if (TotalSeconds > 0) {
+        window.setTimeout("Tick()", 1000)
+      }
+    }
+    function UpdateTimer() {
+      $('#checking').html(TotalSeconds)
+    }
+
+  // end script
+

@@ -1,0 +1,132 @@
+doctype html
+//
+  Photon by HTML5 UP
+  html5up.net | @n33co
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+html
+  script(src='https://code.jquery.com/jquery-1.10.0.min.js', language='javascript')
+  script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+  script(src='https://code.jquery.com/jquery-1.11.1.js')
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js')
+  script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js')
+  script(src='/socket.io/socket.io.js')
+  script(src='https://www.google.com/recaptcha/api.js')
+
+  // Links to css files
+  head
+    title QuHAnT
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    //if lte IE 8
+      script(src='/js/ie/html5shiv.js')
+    link(rel='stylesheet', type='text/css', href='/css/main.css')
+    //if lte IE 8
+      link(rel='stylesheet', href='/css/ie8.css')
+    //if lte IE 9
+      link(rel='stylesheet', href='/css/ie9.css')
+
+  body
+    // Header
+    section#header
+      .inner
+        span.icon.major.fa-cloud
+        h1
+          strong QuHAnT
+          br
+        ul.actions
+          li
+            a.button.scrolly(href='/users/login') Log In
+            a.button.scrolly(href='/users/signup') Sign Up
+
+    .Title
+      h1
+        | Contact QuHAnT
+  
+    .emailform
+      h2#confirm_msg
+        | Message Succesfully Sent. Someone from the QuHAnT team will be in touch with you shortly. 
+        a(href='/') Click here 
+        | to return to the home page.
+      h3 
+        #sent_div
+          //form(id='sendform', method='post', action='/users/contacted')
+          form#thisform(onsubmit='sendmessage(); return false;')
+            input#wide(type='hidden', value='0!lR3D0', name='username')
+            | Name*:
+            br
+            input#wide(required='', type='text', pattern='[a-zA-Z ]{2,}$', name='name', value='',placeholder='Name')
+            br
+            | Preferred Email*:
+            br
+            input#wide(required='', type='text', pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\\.+[a-z]{2,63}$', name='email', placeholder='Email')
+            br
+            | Subject*:
+            br
+            input#wide(required='', type='text', name='subject', value='', placeholder='Subject Line')
+            br
+            | Message*:
+            br
+            textarea(required='', class='message', name='message', value='', placeholder='Let Us Know')
+            br
+            <div id="rcaptcha" class="g-recaptcha" data-sitekey="6LfiwmYUAAAAAGb5XXVx1nRHCB5dScUA571LZqYK"></div>
+            #captcharemind
+              h3(style='color:red; font-weight:bold;') Please complete reCAPTCHA
+            input(type='submit', name='submit', value='Send Message')
+            //button(onclick='send_message()') SubmitNew
+
+
+    section#footer
+      li
+        a.icon.alt.fa-envelope(href='/users/contact')
+          span.label Email
+      ul.copyright
+        li © QuHAnT
+
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $('#confirm_msg').hide()
+      $('#captcharemind').hide()
+      if('#{success}' == 'Sent') {
+        $('#sent_div').hide()
+        $('#confirm_msg').show()
+        $('.Title').hide()
+      }
+      $('#sendform').submit(function() {
+        $(this).ajaxSubmit({
+          error: function(xhr) {
+            status('Error: ' + xhr.status)
+          },
+          success: function(response) {
+            console.log(response)
+          }
+        })
+        return false
+      })
+    })
+
+    function sendmessage() {
+      var formdat = JSON.parse(JSON.stringify($('#thisform').serializeArray()))
+      var captcharesponse = document.getElementById('g-recaptcha-response').value;
+      if (captcharesponse.length > 0) {
+        if (captcharesponse == null || captcharesponse == undefined) {
+          alert('bad code!')
+        }
+        $.ajax({
+          type: 'post',
+          url: '/company/contacted',
+          data: {secret: captcharesponse,formdata: formdat},
+        }).done( function() {
+          $('#sent_div').hide()
+          $('#confirm_msg').show()
+          $('.Title').hide()
+        }).fail( function() {
+        })
+      } else {
+        $('#captcharemind').show()
+      }
+    }
+
+
+  // end script
+

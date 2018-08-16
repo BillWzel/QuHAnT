@@ -1,0 +1,89 @@
+doctype html
+html
+  
+  include ../includes/header.jade
+  script(src='https://www.google.com/recaptcha/api.js')
+
+  .Title
+    h1
+      | Contact QuHAnT
+    
+  .emailform
+    h2#confirm_msg
+      | Message Succesfully Sent. Someone from the QuHAnT team will be in touch with you shortly. 
+      a(href='/users/login_welcome') Click here 
+      | to return to the home page.
+    h3 
+      #sent_div
+        //form(id='sendform', method='post', action='/company/contacted')
+        form#thisform(onsubmit='sendmessage(); return false;')
+          input#wide(required='', type='hidden', value='0!lR3D0', name='username')
+          | Name*:
+          br
+          input#wide(required='', type='text', pattern='[a-zA-Z ]{2,}$', name='name', value='',placeholder='Name')
+          br
+          | Preferred Email*:
+          br
+          input#wide(required='', type='text', pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\\.+[a-z]{2,63}$', name='email', placeholder='Email here')
+          br
+          | Subject*:
+          br
+          input#wide(required='', type='text', name='subject', value='', placeholder='Subject Line')
+          br
+          | Message*:
+          br
+          textarea(required='', class='message', name='message', value='', placeholder='Let Us Know')
+          br
+          <div id="rcaptcha" class="g-recaptcha" data-sitekey="6LfiwmYUAAAAAGb5XXVx1nRHCB5dScUA571LZqYK"></div>
+          #captcharemind
+            h3(style='color:red; font-weight:bold;') Please complete reCAPTCHA
+          input(type='submit', name='submit', value='Send Message')
+          //button(onclick='send_message()') SubmitNew
+
+
+  include ../includes/footer.jade
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $('#captcharemind').hide()
+      $('#confirm_msg').hide()
+      if('#{success}' == 'Sent') {
+        $('#sent_div').hide()
+        $('#confirm_msg').show()
+        $('.Title').hide()
+      }
+      $('#sendform').submit(function() {
+        $(this).ajaxSubmit({
+          error: function(xhr) {
+            status('Error: ' + xhr.status)
+          },
+          success: function(response) {
+            console.log(response)
+          }
+        })
+        return false
+      })
+    })   
+
+    function sendmessage() {
+      var formdat = JSON.parse(JSON.stringify($('#thisform').serializeArray()))
+      var captcharesponse = document.getElementById('g-recaptcha-response').value;
+      if (captcharesponse.length > 0) {
+        if (captcharesponse == null || captcharesponse == undefined) {
+          alert('bad code!')
+        }
+        $.ajax({ 
+          type: 'post',
+          url: '/company/contacted',
+          data: {secret: captcharesponse,formdata: formdat},
+        }).done( function() {
+          $('#sent_div').hide()
+          $('#confirm_msg').show()
+          $('.Title').hide()
+        }).fail( function() {
+        })
+      } else {
+        $('#captcharemind').show()
+      }
+    }
+  // end script

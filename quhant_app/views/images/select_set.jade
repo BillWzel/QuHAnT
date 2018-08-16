@@ -1,0 +1,82 @@
+// Code Review 01/31/17 - Daria Tarasova - Rance Nault
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+
+  style.
+    #main {
+      padding-left: 10%;
+    }
+    #sampletext {
+      color: red;
+      font-size: 0.8em;
+    }
+    p {
+      color: red;
+    }
+
+  #main
+
+    #exists
+      p
+        = success
+      form(method='post', action='/images/setSelection')
+        h4
+          | Select uploaded project: 
+          select#proj(name='project_name')
+            for item in projects
+              option(value=item) #{item}
+        h4
+          | Create new set: 
+          input(type='text', id='set_name', name='set_name', pattern='[a-zA-Z0-9-_]+{3,}', value='', placeholder='New Set Name', required='') 
+          p#sampletext
+            | Set name cannot be edited for sample projects.       
+
+        h4
+          input(name='review_set', type='submit', value='Review Set')
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $("#samplewarning").hide()
+      $("#sampletext").hide()
+      $("li#CreateProject").addClass("visited")
+      $("li#Upload").addClass("previous")
+      $("li#Upload").addClass("visited")
+      $("li#CreateSet").addClass("active")
+      $("li#AnalyzeSet").addClass("next")
+      
+      var sessin = '#{local}'
+      var sessinfo = $.parseJSON(sessin.replace(/&quot;/g,'"'))
+      var project = document.getElementById('proj');
+      if(!project.value) {
+        $('#exists').html('There are no existing projects. Try uploading images first')
+        $('#exists').css('text-align','center')
+      }
+      if (sessinfo.project_name == null) {
+        $('#proj').selectedIndex = 2
+      } else {
+        var list = document.getElementById("proj")
+        for (var opt = 0; opt<list.length; opt++) {
+          if (list[opt].text == sessinfo.project_name) {
+            document.getElementById("proj").selectedIndex = opt
+          }
+        }
+      }
+      if (sessinfo.sampleproj) {
+        $('#samplewarning').show()
+        var elem = document.getElementById("set_name")
+        elem.value = sessinfo.username
+        elem.readOnly = true
+        $('#sampletext').show()
+      }
+      $('a#changestat').click(function() {
+        $.ajax({type: 'post', url: '/images/changemode'}).done(function() { $(location).attr('href', '/images/select_set') })
+      })
+    })
+
+    
+
+  // Footer
+  include ../includes/footer.jade

@@ -1,0 +1,1 @@
+[{"cyp1a1" : [{"geneexp" : [{"d1":1.5, "D2":1.8 },{"d1":2.5,"D2":2.8}], "chip": [{"test":"OK"}], "details": [{"ANNOT":"A"}] }] },{"cyp1a2" : [{"geneexp" : [{"d1":1.5, "D2":1.8 },{"d1":2.5,"D2":2.8}], "chip": [{"test":"OK"}], "details": [{"ANNOT":"A"}] }] }]

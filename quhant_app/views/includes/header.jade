@@ -1,0 +1,273 @@
+head
+  title QuHAnT
+  meta(charset='utf-8')
+  meta(name='viewport', content='width=device-width, initial-scale=1, maximum-scale=1')
+  link(rel='shortcut icon', type='image/x-icon', href='favicon.ico')
+  //if lte IE 8
+    script(src='/js/ie/html5shiv.js')
+  link(rel='stylesheet', type='text/css', href='/css/main.css')
+  //if lte IE 8
+    link(rel='stylesheet', href='/css/ie8.css')
+  //if lte IE 9
+    $('#browserWarning').show
+    link(rel='stylesheet', href='/css/ie9.css')
+
+  script(src='https://code.jquery.com/jquery-1.10.0.min.js', language='javascript')
+  script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+  script(src='https://code.jquery.com/jquery-1.11.1.js')
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js')
+  script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js')
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js')
+  script(src='/socket.io/socket.io.js')
+  script(src='http://stuk.github.io/jszip/dist/jszip.js')
+  script(src='http://stuk.github.io/jszip-utils/dist/jszip-utils.js')
+  script(src='https://cdn.rawgit.com/eligrey/FileSaver.js/e9d941381475b5df8b7d7691013401e171014e89/FileSaver.min.js')
+
+  script.
+    $(function() {
+    var pull = $('#pull');
+    menu = $('nav.clearfix ul');
+    menuHeight = menu.height();
+    $(pull).on('click', function(e) {
+    e.preventDefault();
+    menu.slideToggle();
+    });
+    $(window).resize(function(){
+    var w = $(window).width();
+    if(w > 320 && menu.is(':hidden')) {
+    menu.removeAttr('style');
+    }
+    });
+    });
+
+    /* When the user clicks on the button,
+    toggle between hiding and showing the dropdown content */
+    function myFunction(linkID) {
+      document.getElementById(linkID).classList.toggle("show");
+    }
+    // Close the dropdown if the user clicks outside of it
+    window.onclick = function(e) {
+      if (!e.target.matches('.dropbtn')) {
+        var dropdowns = document.getElementsByClassName("dropdown-content");
+        for (var d = 0; d < dropdowns.length; d++) {
+          var openDropdown = dropdowns[d];
+          if (openDropdown.classList.contains('show')) {
+            openDropdown.classList.remove('show');
+          }
+        }
+      }
+    }
+
+    $('a#logout').click(function() {
+      $.ajax({type:'post', url: '/logout'}).done(function(){ })
+    })
+
+
+  style.
+    nav.clearfix {
+      height: 40px;
+      width: 0%;
+      font-size: 11pt;
+      font-family: 'PT Sans', Arial, sans-serif;
+      font-weight: bold;
+      position: relative;
+      //border-bottom: 2px solid #283744;
+    }
+
+    nav.clearfix ul {
+      padding: 0;
+      margin: 0 auto;
+      width: 600px;
+      height: 10px;
+      list-style-type: none;
+      text-decoration: none;
+    }	
+    ul {
+      list-style-type: none;
+      padding: 0;
+      overflow: visible;
+    }  
+    nav.clearfix li {
+      display: inline-block;
+      float: left;
+    }
+    ul.clearfix li {
+      float: left;
+    }
+    li a, .dropbtn {
+      display: inline-block;
+      color: #FFF;
+      padding: 0px 50px 0px 5px;
+      text-decoration: none;
+      position: absolute
+      bottom:5;
+      overflow: visible;
+    }
+    li a:hover, .dropdown:hover .dropbtn {
+      //background-color: #4361C2;
+      font-weight: bold!important;
+    }
+    li.dropdown {
+      display: inline-block;
+    }
+    .dropdown-content {
+      display: none;
+      position: absolute;
+      background-color: #f9f9f9;
+      min-width: 160px;
+      box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    }
+    .dropdown-content a {
+      color: black;
+      padding: 12px 16px;
+      text-decoration: none;
+      display: block;
+      text-align: left;
+    }
+    .dropdown-content a:hover {
+      background-color: #f1f1f1
+    }
+    .show {
+      display:block; 
+      overflow: visible;
+    }
+
+    .clearfix:before,
+    .clearfix:after {
+      content: " ";
+      display: table;
+    }
+    .clearfix:after {
+      clear: both;
+    }
+    .clearfix {
+      *zoom: 1;
+    }
+  
+    nav.clearfix a {
+      color: #fff;
+      display: inline-block;
+      width: 100px;
+      text-align: center;
+      text-decoration: none;
+      line-height: 40px;
+      text-shadow: 1px 1px 0px #283744;
+      list-style-type: none;
+      text-decoration: none;
+    }
+  
+    nav.clearfix li a {
+      border-right: 1px solid #576979;
+      box-sizing:border-box;
+      -moz-box-sizing:border-box;
+      -webkit-box-sizing:border-box;
+      list-style-type: none;
+      text-decoration: none;
+    }
+    nav.clearfix li:last-child a {
+      border-right: 0;
+    }
+  
+    nav.clearfix a:hover, nav.clearfix a:active {
+      background-color: #8c99a4;
+    }
+  
+    nav.clearfix a#pull {
+      display: none;
+    }
+    .inner sub {
+      font-size: 0.6em;
+    }
+
+    #browserWarning {
+      top: 0px;
+      width: 100%;
+      height: 20%;
+      background-color: #FFFF7B;
+      font-size: 0.5em;
+      text-align: center;
+      display: none;
+    }
+
+    #samplewarning {
+      top: 0px;
+      width: 100%;
+      height: 20%;
+      background-color: #EEFB46;
+      font-size: 0.5em;
+      text-align: center;
+      display: none;
+    } 
+    #samplewarning h1 {
+      color: black;
+      margin: 0 0;
+      padding: 0 0;
+      height: 30px;
+      font-size: 1.5em;
+    }
+  
+body
+  // Header
+  #browserWarning
+    h1
+      | You are using an unsupported browser. Please update your browser for the best user experience. 
+  #samplewarning
+    h1
+      img(src='/img/warning-yellow-icon-9.png', id='sampwarn', height=22)
+      | You are currently in Sample Project mode. To return to normal mode, 
+      a(href='#' id='changestat') click here.
+  
+  section#header
+    .inner
+      span.icon.major.fa-cloud
+      h1
+        strong
+          a(href='/users/login_welcome', title='Go Home') QuHAnT
+        sub Beta
+      nav.clearfix
+      ul.clearfix
+        li
+          a(href='/users/login_welcome', title='Go To Home Page', id='home1') 
+            span.icon.fa-home.fa-lg
+        li
+          a(href='/users/billing', title='UserSettings', id='settings1') 
+            span.icon.fa-cog.fa-lg
+        li.dropdown
+          span.icon.fa-user.fa-lg
+          a.dropbtn(href='javascript:void(0)', title='Access your user information here', onclick='myFunction("userMenu")') User &#9660
+          #userMenu.dropdown-content
+            a(href='/users/login_welcome') Home
+            a#giftcode(href='/users/codeinput') Apply Gift Code
+            a(href='/users/billing') Profile Settings
+            a#logout(href='http://quhant.com') Logout
+            //a#welcome(href='https://quhant.com') Welcome Page
+        li
+          span.icon.fa-cloud-upload.fa-lg
+          a(href='/project/project', title='Upload Images', id='newProject') Create New Project
+        li.dropdown
+          span.icon.fa-folder-open-o.fa-lg
+          a.dropbtn(href='javascript:void(0)', title='Review quality control measures and create subsets', onclick='myFunction("projectMenu")') Review & Manage Projects &#9660
+          #projectMenu.dropdown-content
+            a(href='/images/select_set') Create New Set
+            a(href='/images/update_set') Continue Set Review
+            a(href='/images/update_set') Update Set
+        li
+          span.icon.fa-bar-chart.fa.lg
+          a(href='/analyze/analyze', title='Use a QuHAnT module to analyze your sets') Analyze Sets
+        li
+          span.icon.fa-cloud-download.fa.lg
+          a(href='/analyze/results', title='Import your metadata and view results') View Results
+        li.dropdown
+          span.icon.fa-university.fa-lg
+          a.dropbtn(href='javascript:void(0)', title='Learn more about QuHAnT', onclick='myFunction("quhantMenu")') QuHAnT &#9660
+          #quhantMenu.dropdown-content
+            a(href='/company/about_us') About Us
+            a(href='/company/contact_us') Contact Us
+            a(href='/company/faq') FAQ's
+        //a#pull(href='#') Menu
+
+      script.
+        $('a#logout').click(function() {
+          $.ajax({type:'post', url: '/logout'}).done(function(){ })
+        })
+

@@ -1,0 +1,71 @@
+doctype html
+html
+  
+  include ../includes/header.jade
+  //include ../includes/range_labeled.jade
+
+  style.
+    h1,h2,h4 {
+      text-align: center;
+      padding-left: 5%;
+      padding-right: 5%;
+    }
+    p {
+      text-aling: justify;
+      text-justify: distribute;
+      padding-left: 5%;
+      padding-right: 5%;
+    }
+
+    figure {
+      text-align: center;
+    }
+
+    iframe {
+      margin-top: 100em;
+      margin-bottom: 1em;
+    }
+
+
+  h1
+    | Project Details
+  h4
+    | For more information on how to create your own project and upload your own images, please view our tutorial video.
+
+  div
+    h2 
+      | Study Details
+      br
+    p
+      | The images of this sample project represent liver tissue sections which were stained with Oil Red O (ORO). ORO stains neutral lipids in red and the accumulation of these lipids are a key feature in fatty liver disease. The study evaluated the role of the persistent evironmental contaminant TCDD is promoting lipid accumulation in the liver. For more details on this study and the role of TCDD in fatty liver disease please read our 
+      a(href='#') publication.
+      br
+      br
+      b Illustrative example in this sample study:
+      br
+      br
+      | (1) The use of the quality control module to identify poor quality images and flag them for the user.
+      br
+      figure
+        img(src='/img/PuzzlePic.png', width='20%', id='qimg', align='inline-block')
+        img(src='/img/PuzzlePic.png', width='20%', id='qimg', align='inline-block')
+        figcaption Fig.1 - A poor quality image which is blurry
+      br
+      br
+      | (2) The creation of a set which will be used for quantitative analysis.
+      br
+      br
+      | (3) Module selection and analysis.
+      br
+      br
+      | (4) Upload of metadata for visualization of data.
+      br
+      br
+      | (5) Export of results for independent statistical evaluation and interpretation.
+      br
+      br
+    h1
+      a(href='/sample_project/sample_display') Continue with sample study!
+
+
+  include ../includes/footer.jade

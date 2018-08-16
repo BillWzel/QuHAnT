@@ -1,0 +1,45 @@
+// Code review 07/22/16 Daria Tarasova - Jingyi Liu - Anna Schmidt
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+  //script(src='http://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js', type='text/javascript')
+  style.
+    #main {
+      display: flex;
+    }
+
+    .ppp {
+      width: 70%;
+      text-align: center;
+      margin-left: 20px;
+      padding-right: 40%;
+    }
+
+    .ppp h2 {
+      font-size: 0.8em;
+    }
+
+    button {
+      font-size: 0.3em;
+    }
+  #main
+
+    #popdiv
+      | Hello again
+
+    #popdiv2
+
+    #popdiv3
+
+    #popdiv4
+
+script(language='javascript').
+  $(document).ready(function(){
+  var filename = '/cors_demo/analysis_modules/test.html'
+  $('#popdiv').load(filename)
+  $('#popdiv2').load(filename)
+  $('#popdiv3').load(filename)
+  $('#popdiv4').load(filename)
+  });

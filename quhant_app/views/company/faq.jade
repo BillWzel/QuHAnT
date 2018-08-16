@@ -1,0 +1,174 @@
+doctype html
+html
+  
+  include ../includes/header.jade
+
+  style.
+    h1,h2,h4 {
+      text-align: center;
+      padding-left: 5%;
+      padding-right: 5%;
+    }
+    h4:hover {
+      color: blue;
+      cursor: pointer;
+    }
+    p {
+      text-align: justify;
+      text-justify: distribute;
+      padding-left: 5%;
+      padding-right: 5%;
+    }
+
+    iframe {
+      margin-top: 100em;
+      margin-bottom: 1em;
+    }
+
+
+  h1
+    | Frequently Asked Questions
+
+  div
+    h4 
+      | What is QuHAnT?
+      br
+    p
+      iframe(width='420', height='315', align='right', src='https://www.youtube.com/embed/6jv21ldN3C4')
+      | The Quantitative Histological Analysis Tool (QuHAnT) was developed by the Zacharewski lab research group at Michigan State University in order to increase the accuracy, reliability, and efficiency of their histological evaluations, a process that was performed manually prior to development of the tool. With research in mind, the tool was developed to deal with hundreds of slide representing dose-dependent and/or time-dependent changes in histological features such as the accumulation of lipid droplets, or the deposition of collagen in mouse livers. As the value and need for such approach has become increasingly evident, largely due to technological advances which have improved the quality and efficiency of slide scanners, the software and framework has been refined for application in other research areas including veterinary diagnostics and safety testing of new chemicals and drugs. Ultimately, the goal of QuHAnT is to leverage technological advances to assist qualified pathologists in improving human, animal, and environmental health. A more technical description of QuHAnT is available in our recent 
+      a(href='#') publications.
+      
+
+  div
+    h4
+      | How does QuHAnT work?
+    p
+      img(src='/img/PuzzlePic.png', width='35%', id='qimg', align='right')
+      | The QuHAnT software as a service is developed using a modular framework making it highly flexible for a variety of histological evaluations. The following illustration provides an overview of the framework where 
+      b (i) 
+      |images are uploaded in a batch to the cloud, 
+      b (2) 
+      | quality control is performed to identify poor quality images and provide a recommendations, 
+      b(3) 
+      | high quality images are quantitatively analyzed using customized and validated modules, and 
+      b (4) 
+      | data is returned for visualization, statistical analysis, and interpretation by pathologists.  
+      br
+      br
+      u
+        i QuHAnT modules
+      br
+      |	At the core of the QuHAnT framework are the customized and validated modules which enable the reliable and accurate quantitation of features of interest. Module creation is guided by qualified pathologists (pathologist-driven) who define the visual characteristics (shape, size, colors, etc.) and the industry standards for the particular feature of interest. Before modules are used for analyses, they are blindly validated to manually quantitated images, performed by a pathologist, providing confidence in the results obtained. It should be noted however, that QuHAnT will never attempt to interpret or diagnose tissue sections, leaving the critical decisions in the hands of pathologists who have the necessary experience and expertise. The modular framework additionally offers the possibility to interchange and/or combine analysis modules or specialized quality control modules to address any special needs.
+      br
+      br
+      u
+        i Analysis on the cloud
+      br
+      | QuHAnT analyses are performed in the cloud, leveraging computing resources powered by Joyent®. This allows the analyses to be performed in a highly parallel manner no matter the size of the study being evaluated. QuHAnT is particularly well suited for extremely large studies which scale poorly when using manual approaches. Furthermore, your images and data are stored, and regularly backed-up, in the cloud providing security for these valuable images.
+
+div
+  h4
+    | What is the unique advantage of QuHAnT?
+  p
+    b (1) Software as a service: 
+    | QuHAnT has no hardware requirements as it leverages the computational power of the cloud. This means that there are no significant investments required by the user for infrastructure as long-term storage is also provided. There are also no installation of software or costly updates as the most recent and up-to-date features and modules are always available at the QuHAnT website. In addition, by being completely cloud-based users are able to access their images and analyses from any location using any device. This further simplifies the sharing of data with colleagues, collaborators, and clients. 
+    br
+    b (2) Pathologist-in-the-loop approach: 
+    | QuHAnT will never make a diagnosis or interpretation of the results. We believe that the pathologists, with their extensive training and expertise in an area that is full of nuances are better positioned to make those decisions. QuHAnT simply allows pathologists to make an informed decision more rapidly. At every step of the process the pathologist can agree or disagree with the modules. Should the module not perform as expected, their input is used to optimize the module for their specific needs.  
+    br
+    b (3) Automated Quality Control: 
+    | The automated quality control module provides an immediate screen for bad images prior to quantitative analyses. Rather than making the final decision which should, and is, left in the hands of qualified pathologist, QuHAnT returns assessments of blurriness, emptiness, presence of bubbles or debris, and false-positive staining and provides a suggestion. This reduces the probability of obtaining inaccurate results in your quantitative assessments.
+    br
+    b (4) Pathologist guided and validated modules: 
+    | QuHAnT modules are heuristic-based, using a combination of characteristics of the features of interest which are defined by a qualified pathologist. As such, they are often less sensitive to variations in stain intensity. Moreover, this results in models which generate similar values to pathologist scores using manual approaches. In fact, module development comprises numerous cycles of (i) feature definition by pathologists, (ii) development using a subset of images, (iii) validation using a separate set of images, (iv) identification of false-positives and negatives by a pathologist, and repeating this cycle with new image subsets each time to a robust module. The modules are validated to the current gold-standard for quantitation. 
+    br
+    b (5) Incorporation of novel metrics: 
+    | The manual quantitation of histological features is time-consuming. Because of this, assessments will typically limit themselves to a single metric which is representative of the feature of interest. The highly parallel approach of QuHAnT analyses, however, make it possible to add several metrics to the analyses with little to no increase in the amount of time taken to evaluate the pathology images. For example, when evaluating liver sections for lipid droplets, a module estimating percent tissue area was created to meet the current manual quantitation standard. Additional metrics of total number of lipid droplets and size of individual droplets were also added, providing valuable information of the development of disease. 
+    br
+    b (6) Agnostic to image capture software: 
+    | There are numerous types of slide scanners available on the market which use proprietary formats, and software's which are intended for use with these formats. QuHAnT uses images which are sampled from these digital slides as high resolution TIFF images making it entirely agnostic of the image capturing software.   
+
+  div
+    h4
+      | How can pathologists use QuHAnT in their own work?
+    p
+      | QuHAnT is not intended to replace pathologists. Histological evaluations are complex and require the unique expertise of pathologists gained through extensive training and experience. Nevertheless, the quantitative evaluation of histological features is becoming increasingly important in veterinary diagnostics and safety testing of new chemicals and drugs. As slide scanners improve and digital pathology is becoming a standard technique in histological evaluations, computational tools such as QuHAnT can alleviate the workload associated with these onerous and time-consuming evaluations. 
+      br
+      | QuHAnT's unique features make is an extremely useful tools for pathologists. Validated modules ensure results consistent with accepted approaches which will be more readily accepted by other pathologists, sponsors, and regulatory agencies. The ability to obtain these quantitative results in less time, and in a reliable and consistent manner, will allow pathologists to take on larger studies without compromising the quality and thoroughness of their evaluations. The time saved by QuHAnT also provide more time for pathologists to make a well informed interpretation or diagnosis using  a combination of QuHAnT analysis results and their own judgement.
+
+
+  div
+    h4 
+      | Where do I start?
+      br
+    p
+      | The recommended process is:
+      br
+      | 1) Create New Project
+      br
+      | 2) Upload Images
+      br
+      | 3) Determine which images to keep in your initial set in the image review
+      br
+      | 4) Analyze set
+      br
+      | 5) Display results and input metadata
+      br
+      | 6) Export results
+      br
+      br
+  div
+    h4
+      | What if I get led to an error page?
+      br
+    p
+      | Go to our 
+      a(href='http://www.quhant.com/company/contact_us') contact us page 
+      | and let us know of the error and steps you took to get there. We try to review and fix each problem within 24 hrs.
+
+ div
+    h4
+      | How do I tar a file?
+      br
+    p#tar
+      | There are a number of options to tar a file but here are our recommended ways:
+      br 
+      b Windows/Mac: 
+      br
+      | 1) Download 
+      a(href='http://www.7-zip.org') 7-zip 
+      br
+      | 2) Using 7-zip, navigate to image directory
+      br
+      | 3) Select the "add" symbol 
+      br
+      | 4) Choose the archive format tar from dropdown menu
+      br
+      | 5) Hit OK!
+      br
+      br
+      b Unix
+      br
+      | 1) Open command line interface
+      br
+      | 2) Run the following command
+      br 
+      b tar -cf {PROJECT NAME}.tar {IMAGE FOLDER PATH}       
+
+  include ../includes/footer.jade
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $('p').hide()
+      var id = ''
+      if (location.hash) {
+        id = location.hash.substr(1);
+      }
+      if (id) {
+        $('#'+id).toggle();
+      }
+    })
+
+    $('h4').click(function() {
+      $(this).next('p').toggle();
+    });

@@ -1,0 +1,257 @@
+// Code Review 07/25/16 - Daria Tarasova - Jingyi Liu - Anna Schmidt
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+
+  style.
+    table img {
+      width: 20px;
+    }
+    input[type=checkbox] {
+      width: 40px;
+      text-align: center;
+    }
+    #loading {
+      position: fixed;
+      top: 30%;
+      left: 40%;
+    }
+    img#load {
+      width: 50%;
+    }
+    #button {
+      text-align: center;
+      vertical-align: middle;
+      margin: auto;
+    }
+    #selMod {
+      text-align: center;
+      vertical-align: middle;
+      margin: auto;
+    }
+
+  .confirm
+    h1 No sets selected
+    p
+      | Please select at least one set
+      em
+    button#ok(autofocus='') Okay
+
+  #loading(style='display:none')
+    img#load(src='/img/loadingSymbol.gif')
+
+  #exists
+    div#selMod
+      h3
+        strong Select a Module: 
+        select#mod_list
+          for item in modules 
+            option(value=item) #{item}
+
+    table#moduleid(style='width:100%')
+      thead
+        tr
+          th  
+          th Project
+          th Set
+          th Date Analyzed
+    
+
+    div#button
+      input(type='checkbox', id = 'metadata', name='metadata', checked=false)
+      |  Skip metadata upload step
+      br
+      button(onclick='check()') Next
+    br
+    br
+
+    // Footer
+    include ../includes/footer.jade
+
+
+  script.
+    // --------------------- DOCUMENT READY ---------------------------------
+    $(document).ready(function(){
+      $("#samplewarning").hide()
+      $("li#CreateProject").addClass("visited")
+      $("li#Upload").addClass("visited")
+      $("li#CreateSet").addClass("visited")
+      $("li#AnalyzeSet").addClass("visited")
+      $("li#AnalyzeSet").addClass("previous")
+      $("li#Display").addClass("active")
+      $("li#Metadata").addClass("next")
+      $('.confirm').hide()
+
+      var sessinfo = $.parseJSON('#{local}'.replace(/&quot;/g,'"'))
+      if (sessinfo.sampleproj) {
+        $('#samplewarning').show()
+      }
+
+      $('a#changestat').click(function() {
+        $.ajax({type: 'post', url: '/images/changemode'}).done(function() { $(location).attr('href', '/analyze/results') })
+      })
+
+      result_check(1000) // First refresh wait is 1 second
+      sessin = $.parseJSON('#{local}'.replace(/&quot;/g,'"'))
+
+      var sets = '#{sets}'
+      var seti = $.parseJSON(sets.replace(/&quot;/g,'"'))
+
+      for (var i in seti) {
+        var element = seti[i]
+        for (var j in element) {
+          var analysis = element[j]
+          var module = analysis.module
+          var $line = $('<tr class=' + module.replace( / /g, '_') + '></tr>')
+          $line.append($('<td id=' + analysis.analysis_id + '></td>').html('<img src="/img/loadingSymbol.gif"/>'))
+          $line.append($('<td></td>').html(analysis.project_name))
+          $line.append($('<td></td>').html(analysis.set_name))
+          $line.append($('<td></td>').html(analysis.analysis_date.slice(0,10)))
+          $('table#moduleid').append($line)
+        }
+      }
+
+      var selected_mod = document.getElementById('mod_list')
+      if (sessin.module) {
+        var sel_mod = sessin.module.replace(/ /g, '_')
+        $('tr').not('tr.'+sel_mod).not('thead tr').hide()
+        // TODO: easier way?
+        for (var i = 0; i <selected_mod.length; i++) {
+          if (selected_mod[i].value.replace( / /g,'_')  == sel_mod) {
+            document.getElementById('mod_list').selectedIndex = i // LOOK INTO THIS
+          }
+        }
+      } else {
+        var sel_mod = selected_mod[0].value.replace( / /g,'_')
+        $('tr').not('tr.'+ sel_mod).not('thead tr').hide()
+      }
+
+      $('select').change(function() {
+        var mod = this.options[this.selectedIndex].value.replace(/ /g, '_')
+        $('tr').show()
+        $('tr').not('tr.'+mod).not('thead tr').hide()
+      })
+
+      function sortTable(row){
+        var rows = $('#moduleid tbody  tr').get();
+
+        rows.sort(function(a, b) {
+          var A = $(a).children('td').eq(row).text().toUpperCase();
+          var B = $(b).children('td').eq(row).text().toUpperCase();
+        
+          if(A < B) {
+            return -1;
+          } else if(A > B) {
+            return 1;
+          }
+          return 0;
+        });
+
+        $.each(rows, function(index, row) {
+          $('#moduleid').children('tbody').append(row);
+        });
+      }
+      sortTable(2)
+    })
+    // ---------- Ajax post to check if job is still running --------------
+    function result_check(time_interval) {
+      if (time_interval > 1200000) { // If running more than 20 minutes
+        // raise error
+      } else {
+        CreateTimer(time_interval)
+        setTimeout( function() {
+          $.ajax({
+            url: '/analyze/results_post',
+            type: 'post',
+          }).done( function(output) {
+            update_table(output)
+            output = JSON.parse(output)
+            if (output.state == 'running') {
+              result_check(time_interval*2)
+            }
+          })
+        }, time_interval)
+      }
+    }
+
+    function CreateTimer(time_interval) {
+      TotalSeconds = time_interval/1000
+      window.setTimeout("Tick()", 1000);
+    }
+    function Tick() {
+      TotalSeconds -= 1;
+      if (TotalSeconds > 0) {
+        window.setTimeout("Tick()", 1000)
+      }
+    }
+
+
+    function update_table(matrix) {
+      var matrix = $.parseJSON(matrix.replace(/&quot;/g,'"'))
+      for (var i in matrix) {
+        for (var j in matrix[i]) {
+          var an_id = matrix[i][j].analysis_id 
+          var job_status = matrix[i][j].jobStatus
+          if (job_status == 'done') {
+            var l = document.getElementById(an_id)
+            $('td#' + an_id).html('<input type="checkbox"/>')
+          } else if (job_status == 'running') {
+            $('td#' + an_id).html('<img src="/img/loadingSymbol.gif"/>')
+          } else if (job_status == 'error') {
+            $('td#' + an_id).html('<img src="/img/Error-128.png"/>')
+          }
+        }
+      }
+    }
+
+    function check() {
+      var resultsList = []
+      $('#moduleid').find('tr').each(function() {
+        if ($(this).is(':visible') && $(this).find('input[type="checkbox"]').is(':checked')) {
+          var proj = $(this).find('td:nth-child(2)').text()
+          var set = $(this).find('td:nth-child(3)').text()
+
+          var input = proj +'/' + set
+          resultsList.push(input.toString())
+        }
+      })
+
+      var meta = document.getElementById('metadata').checked
+      if (resultsList.length > 0) {
+        $('#loading').show()
+        $(document.body).css({'pointer-events':'none', 'filter':'blur(2px)'})
+        var mod = $('select#mod_list').val()
+        if (meta == false) {
+          $.ajax({
+            type: 'post',
+            url: '/analyze/metadata',
+            data: {CheckedResults: resultsList, module: mod},
+          }).done(function() {
+            $(location).attr('href', '/analyze/metadata')
+            $(document.body).css({'cursor':'default'})
+          }).fail(function() {
+            alert('failed')
+          })
+        } else {
+          $.ajax({
+            type: 'post',
+            url: '/analyze/skip_metadata',
+            data: {CheckedResults: resultsList, module: mod},
+          }).done(function() {
+            $(location).attr('href', '/analyze/disp_results')
+            $(document.body).css({'cursor':'default'})
+          })
+        }
+      } else {
+        $('.confirm').show()
+        $('#ok').css({'width':'100%'})
+        $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+      }
+    }
+
+    $('#ok').click(function() {
+      $('.confirm').hide()
+      $('body > *').css({'opacity':'1','pointer-events':'auto'})
+    })

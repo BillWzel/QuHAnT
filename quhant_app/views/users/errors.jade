@@ -1,0 +1,63 @@
+doctype html
+//
+  Photon by HTML5 UP
+  html5up.net | @n33co
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+html
+  // Links to css files
+  head
+    title QuHAnT
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    //if lte IE 8
+      script(src='/js/ie/html5shiv.js')
+    link(rel='stylesheet', type='text/css', href='/css/main.css')
+    //if lte IE 8
+      link(rel='stylesheet', href='/css/ie8.css')
+    //if lte IE 9
+      link(rel='stylesheet', href='/css/ie9.css')
+
+  style.
+    #login.container {
+      text-align: center;
+    }
+
+
+  body
+    // Header
+    section#header
+      .inner
+        span.icon.major.fa-cloud
+        h1
+          strong QuHAnT
+          sub Beta 
+          strong Login
+          br
+        ul.actions
+          li
+            a.button.scrolly(href='/') Home Page
+    section#login.container
+      h1 Looks like something went wrong!
+      br
+      h3
+        | Try making sure the link is correct but if the problem remains, feel free to contact us.
+
+
+
+    // Footer
+    section#footer
+      li
+        a.icon.alt.fa-envelope(href='/users/contact')
+          span.label Email
+      ul.copyright
+        li © QuHAnT
+
+
+    // Scripts
+    script(src='/js/jquery.min.js')
+    script(src='/js/jquery.scrolly.min.js')
+    script(src='/js/skel.min.js')
+    script(src='/js/util.js')
+    //if lte IE 8
+    script(src='/js/ie/respond.min.js')
+    script(src='/js/main.js')

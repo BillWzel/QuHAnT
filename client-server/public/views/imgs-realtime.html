@@ -1,0 +1,119 @@
+<!DOCTYPE HTML>
+<!--
+	Photon by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>QuHAnT</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+
+		<!-- Scripts -->
+		<script src="assets/js/jquery.min.js"></script>
+		<script src="assets/js/jquery.scrolly.min.js"></script>
+		<script src="assets/js/skel.min.js"></script>
+		<script src="assets/js/util.js"></script>
+		<script src="assets/js/main.js"></script>
+		<script src="http://code.jquery.com/jquery-1.10.0.min.js" language="javascript"></script>
+		<script src="http://code.jquery.com/ui/1.10.3./jquery-ui.min.js" language="javascript"></script>
+		<script src="https://cdn.socket.io/socket.io-1.2.0.js"></script>
+		<script src="http://code.jquery.com/jquery-1.11.1.js"></script>
+		<script src="//ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+		<script src="/socket.io/socket.io.js"></script>
+		<script>
+		var socket = io.connect();
+		$(document).ready(function(){
+			// Listen for the talk event.
+			socket.on('image', function(data) {
+			    var iDiv = document.createElement('div');
+			    iDiv.id = data.value
+				iDiv.style.width = '500px';
+				iDiv.style.paddingTop='90px';
+				iDiv.style.display= 'inline-block';
+			    document.getElementById('imview').appendChild(iDiv);
+ 			    var par = document.getElementById(data.value);
+		        var img = document.createElement('img');
+        		img.src = data.value
+        		par.appendChild(img);
+			$('#loadings').hide();
+				var tempnum = Math.random()
+			});
+			socket.on('scores', function(score){
+			var para = document.getElementById('imgs/' + score.imname);
+				if (score.metric == 'BAD'){
+					para.innerHTML = para.innerHTML + '<input id="' + score.imname + '" type="checkbox" name="QC" value="' + score.imname + '">'+ score.imname
+				} else if (score.metric == 'GOOD') {
+					para.innerHTML = para.innerHTML + '<input id="' + score.imname + '" type="checkbox" name="QC" value="' + score.imname + '" checked>'+ score.imname
+				} else {
+					para.innerHTML = para.innerHTML + '<p style="margin-bottom: 0px;">' + score.metric + ' : ' + score.value + '</p>'
+				}
+			});	
+		});
+	</script>
+	</head>
+	<body>
+
+		<!-- Header -->
+			<section id="header">
+				<div class="inner">
+					<span class="icon major fa-cloud"></span>
+					<h1><strong>QuHAnT</strong></h1>
+					<ul class="actions">
+						<li><a href="index.html" class="button scrolly">Home Page</a></li>
+					</ul>
+				</div>
+			</section>
+
+		<!-- One -->
+			<section id="one" class="main style1 special">
+				<form method="post" action="/quantitate">	
+
+                                <div id="loadings">
+                                        <header class="major">
+                                        </header>
+                                        <img src="imgs/loadingSymbol.gif" style="height: 300px; width: 300px;"/>
+                                        <p> Loading... </p>
+                                </div>
+		    
+				<div id="imview">
+					<header class="major">
+					</header>
+				</div>				
+				<select name="module" id="module">
+					<option value="OilRed O">Oil Red O</option>
+					<option value="PicroSirius Red">PicroSirius Red</option>
+					<option value="Inflammation">Inflammation</option>
+					<option value="QCOnly">QC Only</option>
+				</select>	
+				<input id="analysis" type="submit" name="submit" value="Analyze"/>
+				</form>
+				<form method="post" action="/viewdat">
+					<input id="viewdat" type="submit" name="submit" value="View Results"/>
+				</form>				
+
+			</section>
+
+		<!-- Footer -->
+			<section id="footer">
+				<ul class="icons">
+					<!-- <li><a href="#" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-github"><span class="label">GitHub</span></a></li> -->
+					<li><a href="#" class="icon alt fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+				<ul class="copyright">
+					<li>&copy; QuHAnT</li>
+				</ul>
+			</section>
+
+
+
+	</body>
+</html>

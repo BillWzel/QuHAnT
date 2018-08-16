@@ -1,0 +1,25 @@
+sync=$(cat sync_id.txt)
+qc=$(cat quality.txt)
+#jobsync=$(cat jobsync.txt)
+
+if [ -z "$1" ]
+then
+  echo 'No username passed, only jobs will be deleted. To clean a users directory use ./clean_manta username'
+else
+  echo 'cleaning users directory'
+  #kill ${jobsync}
+  mrm -r ~~/stor/cors_demo/${1}
+  #mmkdir ~~/stor/cors_demo/${1}
+
+  rm -r ./public/cors_demo/${1}
+  #mkdir ./public/cors_demo/${1}
+  #mkdir ./public/cors_demo/${1}/db
+  #mkdir ./public/cors_demo/${1}/results
+
+  #nohup bash sync_jobs.sh > jobsync.txt 2>&1&
+  #echo $! > jobsync.txt
+
+fi
+
+echo 'removing jobs - this could take some time'
+for item in $(mls ~~/jobs); do echo $item; mrm -r ~~/jobs/$item & done

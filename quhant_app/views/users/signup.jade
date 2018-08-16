@@ -1,0 +1,230 @@
+// Code Review 07/22/16 - Daria Tarasova - Anna Schmidt - Jingyi Liu
+
+doctype html
+//
+  Photon by HTML5 UP
+  html5up.net | @n33co
+  Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+html
+  // Links to css files
+  head
+    title QuHAnT
+    meta(charset='utf-8')
+    meta(name='viewport', content='width=device-width, initial-scale=1')
+    //if lte IE 8
+      script(src='/js/ie/html5shiv.js')
+    link(rel='stylesheet', type='text/css', href='/css/main.css')
+    //if lte IE 8
+      link(rel='stylesheet', href='/css/ie8.css')
+    //if lte IE 9
+      link(rel='stylesheet', href='/css/ie9.css')
+
+  script(src='https://code.jquery.com/jquery-1.10.0.min.js', language='javascript')
+  script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+  script(src='https://code.jquery.com/jquery-1.11.1.js')
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js')
+  script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js')
+  script(src='/socket.io/socket.io.js')
+  script(src='https://www.google.com/recaptcha/api.js')
+
+  style.
+    form {
+      width: 80%;
+      margin: 0 auto;
+    }
+    input[type="text"],
+    input[type="email"],
+    input[type="password"],
+    input[type="number"] {
+      width: 100%;
+    }
+    h1 {
+      text-align: center;
+    }
+    p {
+      text-align: center;
+    }
+    h2 {
+      text-align: center;
+      color: green;
+    }
+    .inner sub {
+      font-size: 0.6em;
+    }
+
+  body
+    // Header
+    section#header
+      .inner
+        span.icon.major.fa-cloud
+        h1
+          strong QuHAnT
+          sub Beta    
+          strong Sign Up 
+          br
+        ul.actions
+          li
+            a.button.scrolly(href='/') Home Page
+    // Sign Up Screen
+    section#login.container
+      .signup
+        h1  Sign Up for QuHAnT
+        p * = required 
+        h2#error_msg
+          = success
+        h3
+          #sign_up_form 
+            form(method='post', action='/users/newUser')
+              | Please Enter First Name*
+              br
+              input(required='', type='text', pattern='[a-zA-Z]{2,}$', name='firstName', value=request.body.firstName)
+              br
+              br
+              | Enter Last Name*
+              br
+              input(required='', type='text', pattern='[a-zA-Z]{2,}$', name='lastName', value=request.body.lastName)
+              br
+              br
+              | Enter Username* 
+              br
+              input(pattern=".{3,}", title="Must contain 3 or More Characters", id="username", required='', type='text', name='username', value=request.body.username)
+              br
+              input(type="button", id='username_availability', value='Check Availability')
+              div#username_available_result
+              br
+              | Enter Preferred Email*
+              br
+              input(required='', type='text', pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\\.+[a-z]{2,63}$', name='email', id='email', value=request.body.email)
+              br
+              br
+              | Confirm Email*
+              br
+              input(required='', type='text', pattern='[a-z0-9._%+-]+@[a-z0-9.-]+\\.+[a-z]{2,63}$', name='confirm_email', id='confirm_email', value=request.body.confirm_email)
+              #email_match
+              br
+              | Create Password* 
+              br
+              input(pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}", title="Must Contain At Least 1 Number and 1 Uppercase and Lowercase Letter and At Least 8 Characters.", required='', type='password', name='password', id='password', value='')
+              br
+              br
+              | Confirm Password* 
+              br
+              input(pattern="(?=.*[0-9])(?=.*[a-z])(?=.*[A-Z]).{8,}", title="Must Contain At Least 1 number and 1 Uppercase and Lowercase Letter and At Least 8 Characters.", required='', type='password', name='confirmPassword', id='confirm_pwd', value='')
+              div#password_match
+              br
+              | Company
+              br
+              input(type='text', name='company', id='company', value=request.body.company)
+              br
+              br
+              | Address 1
+              br
+              input(type='text', name='address1', value=request.body.address1)
+              br
+              br
+              | Address 2
+              br 
+              input(type='text', name='address2', value=request.body.address2)
+              br
+              br
+              | City
+              br
+              input(type='text', name='city', value=request.body.city)
+              br
+              br
+              | State
+              br
+              input(type='text', name='state', value=request.body.state)
+              br
+              br
+              | Zip Code
+              br
+              input(type='text', name='zip', value=request.body.zip)
+              br
+              br
+              | Country
+              br
+              input(type='text', name='country', value=request.body.country)
+              br
+              br
+              | Phone (###-###-####) 
+              br
+              input(type='text',pattern='\\d{3}[\\-]\\d{3}[\\-]\\d{4}', name='phone', value=request.body.phone)
+              br
+              br
+              input(type='checkbox', name='mailing_list')
+              | Do you want to receive the QuHAnT newsletter?
+              br
+              br
+              <div id="rcaptcha" class="g-recaptcha" data-sitekey="6LfiwmYUAAAAAGb5XXVx1nRHCB5dScUA571LZqYK"></div>
+              #captcharemind
+                h3(style='color:red; font-weight:bold; font-size: 65%;') Please complete reCAPTCHA
+              input#signup_button(type='submit', name='submit', value='sign up')
+
+    script(language='javascript').
+      $('#username_availability').click(function() {
+        $.ajax({
+          type: 'post',
+          url: '/users/check_username',
+          data: {user: document.getElementById('username').value},
+        }).done(function(result) {
+          if (result == 'yes') {
+            $('#username_available_result').html('Available');
+            $('#username_available_result').css('color','green');
+            $('#signup_button').prop('disabled', false)
+          } else {
+            $('#username_available_result').html('Not Available');
+            $('#username_available_result').css('color','red');
+            $('#signup_button').prop('disabled', true)
+          }
+        })
+
+      })
+
+      function checkPasswordMatch() {
+        var firstPassword = document.getElementById('password').value
+        var secondPassword = document.getElementById('confirm_pwd').value
+
+        if (firstPassword != secondPassword) {
+          $('#password_match').html('Passwords Do Not Match')
+          $('#password_match').css('color','red');
+          $('#signup_button').prop('disabled', true)
+        } else {
+          $('#password_match').html('Passwords Match')
+          $('#password_match').css('color','green');
+          $('#signup_button').prop('disabled', false)
+        }  
+      }
+
+      function checkEmailMatch() {
+        var firstEmail = document.getElementById('email').value
+        var secondEmail = document.getElementById('confirm_email').value
+
+        if (firstEmail != secondEmail) {
+          $('#email_match').html('Emails Do Not Match')
+          $('#email_match').css('color', 'red')
+          $('#signup_button').prop('disabled', true)
+        } else {
+          $('#email_match').html('Emails Match')
+          $('#email_match').css('color', 'green')
+          $('#signup_button').prop('disabled', false)
+        }
+      }
+
+      $(document).ready(function() {
+        $('#confirm_pwd').keyup(checkPasswordMatch)
+        $('#confirm_email').keyup(checkEmailMatch)
+        $('#captcharemind').hide()      
+        if ('#{success}'.indexOf('confirm') > -1) {
+          $('#sign_up_form').hide()
+          $('p').hide()
+        } 
+      })
+
+    // Footer
+    section#footer
+      li 
+        a.icon.alt.fa-envelope(href='/users/contact')
+      ul.copyright
+        li © QuHAnT
+

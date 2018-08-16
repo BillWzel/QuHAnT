@@ -1,0 +1,245 @@
+// Code Review 07/22/16 - Daria Tarasova - Jingyi Liu - Anna Schmidt
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+
+  style.
+    .back-to-top, .back-to-bottom, #accept2 {
+      position: fixed;
+      right: 2%;
+      margin: 5px 5px 5px 5px;
+      color: #666;
+      font-size: 1.5em;
+      z-index: 99;
+    }
+    .back-to-top {
+      bottom: 55%;
+    }
+    #accept2 {
+      bottom: 50%;
+    }
+    .back-to-bottom {
+      bottom: 45%;
+    }
+    #accept2:hover, .back-to-top:hover, .back-to-bottom:hover {
+      color: #66B2FF;
+    }
+    .images {
+      display: inline-block;
+      paddingTop: 90px;
+      width: 33%;
+      min-width: 300px;
+      margin: auto;
+      text-align: center;
+      vertical-align: middle;
+    }
+    .images img {
+      width: 300px;
+      margin-top: 50px;
+    }
+    input[type=checkbox] {
+      margin-bottom: 50px;
+      width: 19px;
+      height: 19px; 
+    }  
+    #button {
+      width:100%;
+      margin: auto;
+      text-align: center;
+      vertical-align: middle;
+      margin-bottom: 50px;
+    }
+    h1 {
+      text-align: center;
+    }
+
+
+  .confirm
+    h1 Do you want to accept this set?
+    p 
+      | When you accept a set as final, you can no longer edit it
+      em
+    button#cancel Cancel
+    button#conf(autofocus='') Confirm
+
+  p    
+    
+    for item in img.images
+      
+      div(class = 'images')
+        p(class = 'saved', id=item.imgName, style='display:none') 
+          | Saved
+        img(id='p'+item.imgName, src= (item.image), class = 'img')
+        div(id=(item.imgName+'text'), class = 'text')
+          | #{item.imgName}
+          br
+          for qc in item.QC
+            | #{qc.name}:
+            | #{qc.metrics}
+            br
+          if item.userInput == 'GOOD'
+            input(type="checkbox", id = item.imgName, checked=true)
+          else if item.userInput == 'BAD'
+            if item.numChannels == 3
+              input(type="checkbox", id = item.imgName, checked=false)
+            
+          else if item.userInput == null 
+            if item.qcOutput == 'GOOD'
+              input(type="checkbox", id = item.imgName, checked=true)
+            else if item.qcOutput == 'BAD' 
+              if item.numChannels == 3
+                input(type="checkbox", id = item.imgName, checked=false)
+            
+  div#button
+    input(id='acceptButton', name='accept', type='submit', value='Accept Set', title='When you accept a set as final, you can no longer edit it.', style='display:none')
+
+  a(href='#top', class='back-to-top')
+    i(class='fa fa-chevron-up')
+  a(href='')
+    i(class='fa fa-floppy-o', id='accept2', style='display:none')
+  a(href='#button', class='back-to-bottom') 
+    i(class='fa fa-chevron-down')
+
+
+
+    script(language='javascript').
+      $('input:checkbox').click(function(chkbox) {
+        $('p#' + this.id +'.saved').show().delay(1000).fadeOut();
+        $.post('update', {img_path: chkbox.target.id, isCheck: chkbox.target.checked})
+      });
+
+      // REMOVE THIS WHEN FIXED
+      //$('#acceptButton').show()
+      //$('#accept2').show()
+
+
+      var socket = io.connect();
+      $(document).ready(function() {
+        
+        $("li#CreateProject").addClass("visited")
+        $("li#Upload").addClass("previous")
+        $("li#Upload").addClass("visited")
+        $("li#CreateSet").addClass("active")
+        $("li#AnalyzeSet").addClass("next")
+        $('.confirm').hide()
+
+        $('#infobox').hide();
+          $('#qimg').click(function(){
+            $('#infobox').toggle();
+          });
+
+        $('.back-to-top').click(function(event) {
+          event.preventDefault();
+          $('html,body').animate({scrollTop:0}, 300);
+          return false;
+        })
+          
+        $('.back-to-bottom').click(function(event) {
+          event.preventDefault();
+          $('html, body').animate({scrollTop: $(document).height()}, 300);
+          return false;
+        })
+
+        var intervalID = setInterval(function() {
+          var images = document.getElementsByClassName('img')
+          var srcString = ''
+          for (i in images) {
+            srcString = srcString + ' ' + images[i].src
+          }
+          if (srcString.indexOf('.gif') == -1) {
+            $('#acceptButton').show()
+            $('#accept2').show()
+            clearInterval(intervalID)
+          }
+        }, 100) 
+
+        // Listen to the talk event
+        socket.on('image', function(data) {
+          image_filepath = data.value
+          showAcceptButton()
+          data.value = data.value.replace('/cors_demo/#{img.user}/#{img.project}/','');
+          data.value = data.value.replace('.jpeg','')
+          $('img#p'+data.value).attr('src',image_filepath)
+        })
+        socket.on('scores', function(score) {
+          var para = document.getElementById(score.imgName+'text');
+          if (score.index == 1) {
+            para.innerHTML = '<p style="margin-bottom: 0px;">' + score.imgName + '</p'
+          } else {
+            if (score.metric == 'BAD'){
+              $('#'+score.imgName+'text').append('<input type="checkbox" id="'+score.imgName+'check" onclick="checkboxClicked(\''+score.imgName+'\')" />')
+            } else if (score.metric == 'GOOD') {
+              $('#'+score.imgName+'text').append('<input type="checkbox" id="'+score.imgName+'check" onclick="checkboxClicked(\''+score.imgName+'\')" checked>')
+            } else {
+              para.innerHTML = para.innerHTML + '<p style="margin-bottom: 0px;">' + score.metric +': ' + score.value + '</p>'
+            }
+          }
+        })
+      }) 
+ 
+      function showAcceptButton() {
+        var images = document.getElementsByClassName('img')
+        var srcString = ''
+        for (i in images) {
+          srcString = srcString + ' ' + images[i].src
+        }
+        console.log(srcString)
+        if (srcString.indexOf('.gif') == -1) { 
+          $('#acceptButton').show()
+          $('#accept2').show()
+        }
+      }
+    
+      function checkboxClicked (image) {
+        $('p#'+image+'.saved').show().delay(1000).fadeOut();
+        var checked = document.getElementById(image+'check').checked
+        $.post('update', {img_path: image, isCheck: checked});
+      }
+
+      $('#accept2').click(function() {
+        var images = document.getElementsByClassName('img')
+        var srcString = ''
+        for (i in images) {
+          console.log(images[i].src)
+          srcString = srcString + ' ' + images[i].src
+        }
+        if (srcString.indexOf('.gif') == -1) {
+          $('.confirm').show()
+          event.preventDefault()
+          $('body > *').not('body > .confirm').css({'opacity': '0.5', 'pointer-events': 'none'})
+        } 
+      })
+
+      $('#acceptButton').click(function() {
+        var images = document.getElementsByClassName('img')
+        var srcString = ''
+        for (var i in images) {
+          console.log(images[i].src)
+          srcString = srcString + ' ' + images[i].src
+        }
+        if (srcString.indexOf('.gif') == -1) {
+          $('.confirm').show()
+          event.preventDefault()
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events': 'none'})
+        }
+      })
+
+      $('#cancel').click(function() {
+       
+        $('.confirm').hide()
+        $('body > *').css({'opacity': '1', 'pointer-events': 'auto'})
+      })
+
+      $('#conf').click(function() {
+        $.ajax({
+          url: '/images/accept',
+          type: 'post',
+        }).done(function() {
+          $(location).attr('href','/analyze/analyze')
+        })
+      })
+
+      
+  include ../includes/footer.jade

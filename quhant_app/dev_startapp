@@ -1,0 +1,28 @@
+# Simple program to run Quhant app forever
+# -w option will restart app if any of the files change
+# 
+# Truly run this forever by typing:
+#    ./start &
+#
+# To kill this you will need to list processes using ps command
+#  Then kill all of the node and forever processes
+
+echo '' > nohup.out
+
+Date=$(date)
+
+nohup bash manta_sync.sh > Monitoring/sync.log 2>&1&
+echo '{service: manta-sync, task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
+
+nohup bash fast_QC_manta.sh > Monitoring/quality.log 2>&1&
+echo '{service: quality-control, task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
+
+nohup bash billing_storage.sh > Monitoring/billStore.log 2>&1&
+echo '{service: storage-costs, task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
+
+nohup bash jobcosts.sh > Monitoring/jobcosts.log 2>&1&
+echo '{service: job-costs, task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
+
+nohup ./node_modules/forever/bin/forever -w app2.js > nohup.out 2>&1&
+echo '{service: website, task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
+ 

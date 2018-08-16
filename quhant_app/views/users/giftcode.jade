@@ -1,0 +1,114 @@
+doctype html
+html
+
+  include ../includes/header.jade
+
+  style.
+    .giftdiv {
+      padding-left: 10%;
+      padding-right: 10%;
+    }
+    #validatecode {
+      padding-top: 0;
+      margin-top: 0;
+      font-size: 0.6em;
+    }
+
+    .message_f p b {
+      color: #FF0000;
+      font-size: 1.2em;
+    }
+    .message_s p b {
+      color: #007F00;
+      font-size: 1.2em;
+    }
+
+    .message_f {
+      padding-left: 10%;
+      padding-right: 10%;
+    }
+    .message_s {
+      padding-left: 10%;
+      padding-right: 10%;
+    }
+
+
+
+  body
+    .message_f
+      p#failure
+        br
+        br
+        b Application of code was unsuccessful.
+        br
+        | Code may have been input incorrectly or already has been used. Please do not hesitate to 
+        a(href='/company/contact_us') contact us 
+        | if the problem persists.
+    .message_s
+      p#success
+        br
+        br
+        b Application of code was successful!
+        br
+        | The coupon has been set as default code for analyses. To manage your billing, please see the 
+        a(href='/users/billing') Profile Settings 
+        | page. 
+
+    .giftdiv
+      h2 
+        //form(method='post', action='/users/GiftCode')
+        br
+        br
+        | Please Enter A Gift Code
+      h3
+        form(onsubmit='subcode(); return false;')
+          input(required='', type='text', id='incode', value='', placeholder='Code')
+          input(type='button', id='validatecode', value='Apply Code')
+
+        script(language='javascript').
+          $('#validatecode').click(function() {
+            $('#success').hide()
+            $('#failure').hide()
+            $.ajax({
+              type: 'post',
+              url: '/users/GiftCode',
+              data: {giftcode: document.getElementById('incode').value},
+            }).done(function(result) {
+              if (result == 'true') {
+                $('#success').show()
+                $('.giftdiv').hide()
+              } else if (result == 'false') {
+                $('#failure').show()
+              }
+            })
+          })
+
+          function subcode() {
+            $('#success').hide()
+            $('#failure').hide()
+            $.ajax({
+              type: 'post',
+              url: '/users/GiftCode',
+              data: {giftcode: document.getElementById('incode').value},
+            }).done(function(result) {
+              if (result == 'true') {
+                $('#success').show()
+                $('.giftdiv').hide()
+              } else if (result == 'false') {
+                $('#failure').show()
+              }
+            })
+          }
+       
+
+
+  include ../includes/footer.jade
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $('#success').hide()
+      $('#failure').hide()
+    })
+
+  // end script
+

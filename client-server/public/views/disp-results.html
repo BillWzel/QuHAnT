@@ -1,0 +1,85 @@
+<!DOCTYPE HTML>
+<!--
+	Photon by HTML5 UP
+	html5up.net | @n33co
+	Free for personal and commercial use under the CCA 3.0 license (html5up.net/license)
+-->
+<html>
+	<head>
+		<title>QuHAnT - Results</title>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<!--[if lte IE 8]><script src="assets/js/ie/html5shiv.js"></script><![endif]-->
+		<link rel="stylesheet" type="text/css" href="assets/css/main.css" />
+		<!--[if lte IE 8]><link rel="stylesheet" href="assets/css/ie8.css" /><![endif]-->
+		<!--[if lte IE 9]><link rel="stylesheet" href="assets/css/ie9.css" /><![endif]-->
+
+		<style>
+		body {
+			font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+		}
+
+		.svg-chart .background {
+			shape-rendering: crispEdges;
+			stroke: #ccc;
+			fill: #fdfdfd;
+			stroke-width: 1px;
+		}
+
+		.svg-chart .bar { fill: #4682B4; }
+		</style>
+	</head>
+	<body>
+
+		<!-- Header -->
+			<section id="header">
+				<div class="inner">
+					<span class="icon major fa-cloud"></span>
+					<h1><strong>QuHAnT</strong></h1>
+					<ul class="actions">
+						<li><a href="index.html" class="button scrolly">Home Page</a></li>
+					</ul>
+				</div>
+			</section>
+
+		<!-- One -->
+			<section id="one" class="main style1 special">
+				<div id="imview">
+					<header class="major"></header>
+					<%-
+						barChartHelper.getBarChart({
+						data: fixtureData,
+						width: 1000,
+						height: 500,
+						xAxisLabel: 'Image ID',
+						yAxisLabel: 'Volume Density',
+						containerId: 'bar-chart-small'
+						})
+					%>		
+				</div>
+
+                                <form method="post" action="/viewdat">
+                                        <input id="viewdat" type="submit" name="submit" value="Refresh Data"/>
+                                </form>
+
+				
+			</section>
+
+		<!-- Footer -->
+			<section id="footer">
+				<ul class="icons">
+					<!-- <li><a href="#" class="icon alt fa-twitter"><span class="label">Twitter</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-facebook"><span class="label">Facebook</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-instagram"><span class="label">Instagram</span></a></li> -->
+					<!-- <li><a href="#" class="icon alt fa-github"><span class="label">GitHub</span></a></li> -->
+					<li><a href="#" class="icon alt fa-envelope"><span class="label">Email</span></a></li>
+				</ul>
+				<ul class="copyright">
+					<li>&copy; QuHAnT</li>
+				</ul>
+			</section>
+
+
+
+	</body>
+</html>

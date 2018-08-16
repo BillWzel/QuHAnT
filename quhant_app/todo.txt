@@ -1,0 +1,28 @@
+High:
+	Image view redirects to analyze/analyze which itself needs req. No way to tell it it is a sample dataset.
+
+	Cancel/Reupload to overwrite previously canceled on images. Delete project if nothing added.
+
+Medium:
+
+	
+Low:
+
+	Improve performance and speed on display results page
+
+	Redirect user to page they were accessing 
+
+        Fix 'innerHTML null' errors in image display page
+
+	Use standard (linter) to check code formatting. Review variable declarations.
+
+	Clean repository (e.g. pingtest.sh and temp.txt not used? Old QC service?)
+
+	Add images in order?
+
+	New view for selecting previously analyzed sets
+
+
+Styles:
+
+	Color image frame based on checked status

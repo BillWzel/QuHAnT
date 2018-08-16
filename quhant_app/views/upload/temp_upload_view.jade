@@ -1,0 +1,364 @@
+// Code Review 07/22/16 - Daria Tarasova - Anna Schmidt - Jingyi Liu
+
+doctype html
+html
+  include ../includes/header.jade
+  include ../testing/progbar-steps.jade
+
+  link(rel='stylesheet', href='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css')
+
+  style.
+    #continueoptions h2{
+      padding-left: 10%;
+    }
+    button, #done {
+      text-align: center;
+    }
+
+
+  // One
+  // section#one.main.style1.special
+  .Title
+  //  h1
+  //    | Upload your histopathology images
+  //    img(src='/img/help.png', id='qimg')
+  //  div(id='infobox')
+  //    b Projects
+  //    br
+  //    | You can drag TIFF images or select them using the selection box. Maximum 400 images per project.
+  //    | Quality control will be performed as images are uploaded and can be reviewed at the same time. A button will appear.
+  //    | Please note that this could take a lot of time dependending on the number and size of images.
+  //    | You can leave the page open for uploads to finish and come back another time to review images.
+
+
+  .confirm#space
+    h1 Spaces are not allowed in image names
+    p
+      | Please rename the images or upload a different project
+      em 
+    button#space_ok(autofocus='') Okay
+
+  .confirm#type
+    h1 Wrong File Type. Please upload tiff images
+    p
+      | Ctrl + A will select all images in folder
+      em
+    button#type_ok(autofocus='') Okay
+
+  .confirm#fail
+    h1 File failed
+    p
+      | Uploads will not start. Please report issue on our contact us page
+      em
+    button#fail_ok(autofocus = '')
+
+  .confirm#failsize
+    h1 Too many files
+    p
+      | Too many images. Please upload up to 4000 images per project.
+      em
+    button#failsize_ok(autofocus = '')
+
+  .confirm#symbol
+    h1 File names should not have any spaces or symbols
+    p
+      | Examples: @, #, %, ^, (), []
+      em
+    button#symbol_ok(autofocus='') Okay
+
+  .confirm#delete
+    h1 There was a problem deleting your project
+    p
+      | Please report the issue on our contact us page
+      em
+    button#delete_ok(autofocus='') Okay
+
+  .confirm#connerror
+    h1 There was an interuption in your connection
+    p
+      | Click here to continue uploads
+      em
+    button#conn_ok(autofocus='') Okay
+
+
+
+  #main
+    div#dropsite
+      header.major
+        h2
+          | You are working on project 
+          = setName
+
+      p Drop files for upload here or use choose file button to find files.
+      
+      // Input to hold images
+      form(enctype='multipart/form-data')
+        input#fileselect(name='file', type='file', multiple='multiple', accept='.tif')
+      button#submit(disabled='', onclick='imgupload(imgupload2)') Upload
+
+    div#continueoptions(style='display:none')
+      a.button.scrolly(href='/images/display', target='_blank') Review Images (Opens New Tab).
+      a.button.scrolly(href='/project/project') Cancel Upload
+      h2
+        br
+        | Images are uploading. This could take some time.
+        br
+        | You can continue to the next step and review images or wait for uploads to complete
+      .progress
+        #prog.progress-bar.progress-bar-striped.active(role='progressbar', aria-valuemin='0', aria-valuemax='100', style='width:0%')
+
+    div#done(style='display:none')
+      a.button.scrolly(href='/images/display') Review Images
+      h2
+        | Images are done uploading.
+
+    script(language='javascript').
+      $(document).ready(function() {
+        updateSess()
+
+        //$(document).ajaxError(function(e, x, o, exc){
+        //  x.abort()
+        //  $('#connerror').show()
+        //  $('#conn_ok').css({'width':'100%'})
+        //  $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+        //})
+        $('#conn_ok').click(function() {
+          var socket = io.connect()
+          document.getElementById('prog').style.width = prog.value + '%';
+          if (prog.value == 100) {
+            $('#continueoptions').hide()
+            $('#done').show()
+            needToConfirm = false;
+          }
+          var flist = document.getElementById("fileselect").files;
+          imgupload2(true,flist)
+        })
+      })
+
+      function progbar() {
+        needToConfirm = true;
+        var socket = io.connect();
+        document.getElementById('prog').style.width = 1 + '%';
+        socket.on('progress', function(prog) {
+          document.getElementById('prog').style.width = prog.value + '%';
+          if (prog.value == 100) {
+            $('#continueoptions').hide()
+            $('#done').show()
+            needToConfirm = false;
+          }
+        });
+      }
+
+      function updateSess() {
+        setTimeout(function() {
+          $.ajax({
+            url: '/upload/updateSess',
+            type: 'post',
+          }).done(function() { 
+            console.log('session renewed')
+          }).fail(function() {
+            console.log("failed")
+          })
+          console.log('renewed')
+          updateSess()
+        },1200000);
+      }
+
+      // Uploads the image to manta
+      function signifies(file, fname) {
+        $.ajax({
+          url: '/upload/sign',
+          type: 'post',
+          data: {file: fname},
+        }).done( function (signature) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('PUT', signature.url, true);
+          xhr.setRequestHeader('accept', 'application/json');
+          xhr.setRequestHeader('access-control-allow-origin', '*');
+          xhr.setRequestHeader('content-type', 'tif');
+          xhr.send(file);
+        }).fail(function () {
+          $('#space').show()
+          $('#space_ok').css({'width':'100%'})
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+          $(location).attr('href','/upload/upload_view')
+        });
+      };
+
+      function add_stream(file) {
+        function create_array(callback) {
+          var filearray = []
+          for (var i = 0; i < file.length; i++) {
+            var fname = (file[i].name).replace('.tif','');
+            filearray.push(fname);
+          }
+          callback(filearray)
+        }
+        function post(filearray) {
+          $.ajax({
+            url: '/upload/stream',
+            type: 'post',
+            data: {'fileArray': filearray},
+          }).done( function () {
+            document.getElementById("dropsite").style.display = 'none';
+          }).fail( function () {
+          })
+        }
+        create_array(post)
+      }
+
+      // Initiates file uploading and allows user to move to the next step.
+      // Calls back imgupload2 
+      function imgupload(callback) {
+        ImNameCheck=true
+        var filedata = document.getElementById("fileselect").files;
+        // Limit to upload 400 images
+        if (filedata.length > 2000) {
+          $('#failsize').show()
+          $('#failsize_ok').css({'width':'100%'})
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+          ImNameCheck=false;
+        } else {
+          for (var j=0; j < filedata.length; j++) {
+            FileName = filedata[j].name;
+            // Only allow tiff images
+            if(filedata[j].type != 'image/tiff') {
+              $('#type').show()
+              $('#type_ok').css({'width':'100%'})
+              $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+              ImNameCheck=false;
+              break;
+            }
+            if(/[^A-Za-z0-9-_.]/.test(FileName)) {
+              console.log(FileName)
+              $('#fail').show()
+              $('#fail_ok').css({'width':'100%'})
+              $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+              ImNameCheck=false;
+              break;
+            } 
+          }
+          callback(ImNameCheck, null);
+        }
+      }
+
+      function uploadResume(callback) {
+        console.log('cross-reference list')
+        callback(true)
+      }
+
+      function imgupload2(flag, newlist) {
+        if (flag === false) {
+          if ($('#type').css('display') == 'none') {
+            $('#symbol').show()
+            $('#symbol_ok').css({'width':'100%'})
+            $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+          }
+        } else {
+          $('#dropsite').hide()
+          $('h1').hide()
+          $('#continueoptions').show()  
+          progbar()
+ 
+          var filedata = document.getElementById("fileselect").files;         
+          console.log('here it is')
+          console.log(newlist)
+          if (newlist === null) {
+            add_stream(filedata);
+            document.getElementById("dropsite").style.display = 'none';
+          } else {
+            var filedata = newlist
+            console.log(filedata)
+          }
+          if (filedata.length <= 2000 ) {
+            for (var i=0; i < filedata.length; i++) {
+              var file = filedata[i];
+              var fname = filedata[i].name;
+              signifies(file, fname);
+            }
+          } else {
+            var filearray = $.makeArray(filedata)
+            for (var counter = 0; counter < Math.ceil(filearray.length/2000); counter++) {
+              console.log('timeout before' + counter)
+              setTimeout(function(counter) {
+                console.log('timeout counter: ' + counter)
+                console.log(filearray[3])
+                var new_array = filearray.splice(0,2000);
+                for (var i = 0; i < new_array.length; i++) {
+                  var file = new_array[i];
+                  var fname = new_array[i].name;
+                  signifies(file, fname);
+                }
+                console.log('you are on counter')
+                console.log(counter)
+              }, 600000*(counter^1.5));
+            }
+          }
+        };
+      };
+
+      // start of dropsite function: allows user to drag and drop images to upload
+      var dropsite = document.getElementById("dropsite");
+      dropsite.ondragover = function() { return false; };
+      dropsite.ondragend = function() { return false; };
+      dropsite.ondrop = function(ev) {
+        ev.stopPropagation(); ev.preventDefault();
+        document.getElementById("fileselect").files = ev.dataTransfer.files;
+        return false;
+      };
+
+      $(document).ready(function() {
+        $('#infobox').hide();
+        $('.confirm').hide();
+        $('#qimg').click(function(){
+          $('#infobox').toggle();
+        });
+        $("li#CreateProject").addClass("previous")
+        $("li#CreateProject").addClass("visited")
+        $("li#Upload").addClass("active")
+        $("li#CreateSet").addClass("next")
+        needToConfirm = true;
+        window.onbeforeunload = askConfirm;
+        window.onunload = rmproj;
+      });
+
+      // Enable button only after images have been selected.
+      $('input:file').on("change", function() {
+        $('#submit').prop('disabled', false); 
+      });
+
+      function askConfirm() {
+        if (needToConfirm) {
+          return 'Are you sure you want to close this window? Uploads will be stopped and images removed if not complete';
+        }
+      }
+
+      //replace this with a 'tag' to remove files
+      function rmproj() {
+        if (needToConfirm) {
+          projDel = '#{setName}'
+          $(document.body).css({'cursor' : 'wait' })
+          $(document.body).css({'filter' : 'blur(2px)'})
+          $.ajax({
+            url: '/users/DeleteProject',
+            type: 'post',
+            async: false,
+            data: {project: projDel},
+          }).done( function () {
+            $(location).attr('href','/users/login_welcome')
+          }).fail( function () {
+            $('#delete').show()
+            $('#delete_ok').css({'width':'100%'})
+            $('body > *').css({'opacity':'0.5', 'pointer-events':'none'});
+            $(location).attr('href','/users/login_welcome')
+          })
+        }
+      }
+       
+      $('.confirm button').click(function() {
+        $('.confirm').hide()
+        $('body > *').css({'opacity': '1', 'pointer-events':'auto'})
+      })
+   
+  // Footer
+  include ../includes/footer.jade

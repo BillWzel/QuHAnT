@@ -1,0 +1,345 @@
+// Code Review 07/22/16 - Daria Tarasova - Anna Schmidt - Jingyi Liu
+
+doctype html
+html
+
+  include ../includes/header.jade
+  
+  style.
+    form#job {
+      margin: 0 0 0 0;
+    }
+    #loading {
+      width: 100%;
+    }
+    img {
+      width: 25%;
+      position: fixed;
+      top: 30%;
+      left: 40%;
+    }
+    .confirm {
+      filter: none;
+      opacity: 1;
+    }
+
+  .confirm#success_proj
+    h1 Project successfully deleted
+    p
+      em
+    button#success_proj_ok(autofocus='') Okay
+
+  .confirm#fail_proj
+    h1 There was a problem deleting your project
+    p
+      | Please report the issue on our contact us page
+      em
+    button#fail_proj_ok(autofocus='') Okay
+
+  .confirm#success_set
+    h1 Set successfully deleted
+    p
+      em
+    button#success_set_ok(autofocus='') Okay
+
+  .confirm#fail_set
+    h1 There was a problem deleting your set
+    p
+      | Please report the issue on our contact us page
+      em
+    button#fail_set_ok(autofocus='') Okay
+
+  .confirm#del_proj
+    h1 Do you really want to delete this project?
+    p
+      | All associated images and sets will be lost
+      em
+    button#del_proj_cancel(autofocus='') Cancel
+    button#del_proj_ok Confirm
+
+  .confirm#del_set
+    h1 Do you really want to delete this set?
+    p
+      em
+    button#del_set_cancel(autofocus='') Cancel
+    button#del_set_ok Confirm
+
+  #loading(style='display:none')
+    img(src='/img/loadingSymbol.gif')
+
+  .Title  
+    h1
+      br 
+      | You are now logged in as 
+      b #{username}
+
+  .SummaryTable
+    ul.tab
+      li
+        a(href='#', class='tabs_list', onclick="openTab(event, 'Projects')") Projects
+      li
+        a(href='#', class='tabs_list', onclick="openTab(event, 'Results')") Results
+      li
+        a(href='#', class='tabs_list', onclick="openTab(event, 'Analyses')") Analysis Charges
+      li
+        a(href='#', class='tabs_list', onclick="openTab(event, 'Storage')") Storage Charges
+
+
+    div#Projects.tabcontent
+      table#proj(style='width:100%')
+        tr
+          th  
+          th Project Name
+          th No. of Sets
+          th No. of Images
+          th Date Created
+          th Status  
+          th Delete 
+
+
+    div#Results.tabcontent
+      table#result(style='width:100%')
+        tr
+          th  
+          th File Name
+          th No. of Sets
+          th Date Analyzed
+          th Download Results
+
+    div#Analyses.tabcontent
+      table#analyses(style='width:100%')
+        tr
+          th Analysis ID
+          th Project
+          th Set
+          th Charge Code
+          th Date
+          th Images
+          th Estimate
+
+    div#Storage.tabcontent
+      table#storage(style='width:100%')
+        tr
+          th Date
+          th Amount
+          th Cost
+
+  include ../includes/footer.jade
+
+  script(language='javascript').
+    $(document).ready(function() {
+      $('.confirm').hide()
+    })
+
+
+    function openTab(evt, tabName) {
+      var i, tabContent, tabLinks;
+
+      tabContent = document.getElementsByClassName('tabcontent');
+      for (i = 0; i < tabContent.length; i++) {
+        tabContent[i].style.display = 'none';
+      }
+      tabLinks = document.getElementsByClassName('tabs_list');
+      for (i = 0; i < tabLinks.length; i++) {
+        tabLinks[i].className = tabLinks[i].className.replace('active','');
+      }
+      document.getElementById(tabName).style.display = 'block';
+      evt.currentTarget.className += 'active';
+      
+      if (tabName == 'Projects') {
+        var projectTable = '#{projTable}'
+        var parsed = $.parseJSON(projectTable.replace(/&quot;/g,'"'))
+        $('table#proj td').remove()
+        for (i in parsed) {
+          var element = parsed[i]
+        
+          var $line = $('<tr id=project></tr>')
+          $line.attr('id', 'project')
+          $line.append($('<td id="expand"></td>').html('<i class="fa fa-chevron-right"></i>'))
+          $line.append($('<td></td>').html(element.projectName))
+          $line.append($('<td id="projSet"></td>').html((element.sets).length))
+          $line.append($('<td></td>').html(element.numImages))
+          $line.append($('<td></td>').html(element.date.slice(0,10)))
+          $line.append($('<td></td>').html('<b><a href="/images/select_set"> Create new set from project  </b>'))
+          $line.append($('<td></td>').html('<div onclick="RemoveProj('+element.projectName+')", id='+element.projectName+'><i class="fa fa-trash"></i></div>'))
+          $('table#proj').append($line)
+    
+          for (j in parsed[i].sets) {
+            var set = parsed[i].sets[j]
+            var setFull = parsed[i].projectName + "ampZ_Zamp" + set.setName
+            var $line_sets = $('<tr></tr>')
+            $line_sets.css('display','none')
+            $line_sets.attr('id', 'sets')
+            $line_sets.append($('<td></td>').html(' '))
+            $line_sets.append($('<td></td>').html(' '))
+            $line_sets.append($('<td></td>').html(set.setName))
+            $line_sets.append($('<td></td>').html(set.setNumImgs))
+            $line_sets.append($('<td></td>').html(set.setDate.slice(0,10)))
+            if (set.setStatus == 'Created') {
+              $line_sets.append($('<td></td>').html(set.setStatus + '<b><a href="/images/update_set">  Continue image review</b>'))
+            } else if (set.setStatus == 'Analyzed') {
+              $line_sets.append($('<td></td>').html(set.setStatus + '<b><a href="/analyze/results">  Visualize data</b>'))
+            } else {
+              $line_sets.append($('<td></td>').html(set.setStatus + '<b><a href="/analyze/analyze">  Analyze set</b>'))
+            }
+            $line_sets.append($('<td></td>').html('<div onclick="RemoveSet('+setFull+')", id='+setFull+'><i class="fa fa-trash"></i></div>'))
+            $('table#proj').append($line_sets)
+          }
+        }
+      } else if (tabName == 'Results') {
+        var resultTable = '#{resTable}'
+        var parsed = $.parseJSON(resultTable.replace(/&quot;/g,'"'))
+        $('table#result td').remove()
+        for (i in parsed) {
+          var element = parsed[i]
+          if (element.jobStatus != 'error') {  
+            var $line = $('<tr id=res></tr>')
+            $line.append($('<td id="xpand"></td>').html('<i class="fa fa-chevron-right"></i>'))
+            $line.append($('<td><a href="/analyze/'+element.fileName+'">'+element.fileName+'</a></td>'))
+            $line.append($('<td id="resSet"></td>').html((element.sets).length))
+            $line.append($('<td></td>').html(element.date.slice(0,10)))
+            $line.append($('<td><form method="post" id="job" action="/analyze/download"><input type="submit" value="Export" name='+element.fileName+'></form></td>'))
+            $('table#result').append($line)
+
+            for (j in parsed[i].sets) {
+             var set = parsed[i].sets[j]
+
+              var $line_sets=$('<tr></tr>')
+              $line_sets.css('display','none')
+              $line_sets.attr('id', 'sets')
+              $line_sets.append($('<td></td>').html(' '))
+              $line_sets.append($('<td></td>').html(' '))
+              $line_sets.append($('<td></td>').html(set))
+              $line_sets.append($('<td></td>').html(' '))
+              $line_sets.append($('<td></td>').html(' '))
+              $('table#result').append($line_sets)
+            }
+          }
+        }
+      } else if (tabName == 'Analyses') {
+        var resultTable = '#{analyses}'
+        var parsed = $.parseJSON(resultTable.replace(/&quot;/g,'"'))
+        $('table#analyses td').remove()
+        for (i in parsed) {
+          var element = parsed[i]
+          var $line = $('<tr id=res></tr>')
+          $line.append($('<td></td>').html(element.analysis_id))
+          $line.append($('<td></td>').html(element.project_name))
+          $line.append($('<td></td>').html(element.set_name))
+          $line.append($('<td></td>').html(element.chargecode))
+          $line.append($('<td></td>').html(element.analysis_date.slice(0,10)))
+          $line.append($('<td></td>').html(element.inputs))
+          $line.append($('<td></td>').html('$'+element.estimate.toFixed(2)))
+          $('table#analyses').append($line)
+        }
+      } else if (tabName == 'Storage') {
+        var resultTable = '#{storage}'
+        var parsed = $.parseJSON(resultTable.replace(/&quot;/g,'"'))
+        $('table#storage td').remove()
+        for (i in parsed) {
+          var element = parsed[i]
+          var $line = $('<tr id=res></tr>')
+          $line.append($('<td></td>').html(element.date))
+          $line.append($('<td></td>').html(element.bytes))
+          $line.append($('<td></td>').html('$'+element.estimate))
+          $('table#storage').append($line)
+        }
+      }
+    }
+   
+    $('table#proj').on('click', '#project', function(e) {
+      $(this).nextUntil('#project').slideToggle()
+    })
+    $('table#result').on('click', '#res', function(e) {
+      $(this).nextUntil('#res').slideToggle()
+    })
+    $('table#result').on('click','#job', function(event) {
+      event.stopPropagation()
+    })
+
+    function RemoveProj(e) {
+      projDel = e.id
+      $('#del_proj').show()
+      $('body > *').not('body > .confirm').not('body > #loading').css({'opacity':'0.5', 'pointer-events':'none'})
+    }
+
+    function RemoveSet(e) {
+      projset = e.id
+      projset = projset.replace('ampZ_Zamp','/')
+     
+      $('#del_set').show()
+      $('body > *').not('body > .confirm').not('body > #loading').css({'opacity':'0.5', 'pointer-events':'none'})
+    }
+
+    $('#del_proj_ok').click(function() {
+      $('.confirm').hide()
+      $('#loading').show()
+      $(document.body).css({'cursor':'wait', 'filter':'blur(2px)'})
+      $.ajax({
+        url: '/users/DeleteProject',
+        type: 'post',
+        data: {project: projDel},
+      }).done( function() {
+        $('#success_proj').show()
+        $('#loading').hide()
+        $('#success_proj_ok').css({'width':'100%'})
+        $(document.body).css({'cursor':'auto', 'filter':'none'})
+        $('body > *').not('body > .confirm').not('body > #loading').css({'opacity':'0.5', 'pointer-events':'none'})
+      }).fail( function() {
+        $(document.body).css({'cursor':'auto', 'filter':'none'})
+        $('#fail_proj').show()
+        $('#loading').hide()
+        $('#fail_proj_ok').css({'width':'100%'})
+      })
+    })
+
+    $('#del_proj_cancel').click(function() {
+      $('.confirm').hide()
+      $('body > *').css({'opacity':'1', 'pointer-events':'auto'})
+    })
+
+    $('#del_set_ok').click(function() {
+      $('.confirm').hide()
+      $('#loading').show()
+      $(document.body).css({'cursor':'wait', 'filter':'blur(2px)'})
+      $.ajax({
+        url: '/users/DeleteSet',
+        type: 'post',
+        data: {set: projset},
+      }).done( function() {
+        $('#success_set').show()
+        $('#loading').hide()
+        $('#success_set_ok').css({'width':'100%'})
+        $(document.body).css({'cursor':'auto', 'filter':'none'})
+        $('body > *').not('body > .confirm').not('body > #loading').css({'opacity':'0.5', 'pointer-events':'none'})
+      }).fail(function() {
+        $(document.body).css({'cursor':'auto', 'filter': 'none'})
+        $('#fail_set').show()
+        $('#loading').hide()
+        $('#fail_set_ok').css({'width':'100%'})
+      })
+        
+    })
+
+    $('#del_set_cancel').click(function() {
+      $('.confirm').hide()
+      $('body > *').css({'opacity':'1', 'pointer-events':'auto'})
+    })
+
+    $('#success_proj_ok').click(function() {
+      $(location).attr('href', '/users/login_welcome')
+    })
+
+    $('#fail_proj_ok').click(function() {
+      $(location).attr('href', '/users/login_welcome')
+    })
+
+    $('#success_set_ok').click(function() {
+      $(location).attr('href', '/users/login_welcome')
+    })
+
+    $('#fail_set_ok').click(function() {
+      $(location).attr('href', '/users/login_welcome')
+    })
+
+    // end script

@@ -1,0 +1,38 @@
+head
+  title QuHAnT
+  meta(charset='utf-8')
+  meta(name='viewport', content='width=device-width, initial-scale=1')
+
+  script(src='https://code.jquery.com/jquery-1.10.0.min.js', language='javascript')
+  script(src='https://cdn.socket.io/socket.io-1.2.0.js')
+  script(src='https://code.jquery.com/jquery-1.11.1.js')
+  script(src='https://ajax.googleapis.com/ajax/libs/jquery/1.12.0/jquery.min.js')
+  script(src='https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js')
+  script(src='/socket.io/socket.io.js')
+
+  //if lte IE 8
+    script(src='/js/ie/html5shiv.js')
+  link(rel='stylesheet', type='text/css', href='/css/main.css')
+  //if lte IE 8
+    link(rel='stylesheet', href='/css/ie8.css')
+  //if lte IE 9
+    link(rel='stylesheet', href='/css/ie9.css')
+  style.
+    li {
+      display: inline-block;
+      padding: 4px;
+      text-align: justify;
+      font-size: 20px;
+      font-weight: bold;
+      margin-bottom: -2px;
+      text-decoration: none;
+    }
+
+body
+  // Header
+  section#header
+    .inner
+      span.icon.major.fa-cloud
+      h1
+        strong
+          a(href='/users/welcome') QuHAnT

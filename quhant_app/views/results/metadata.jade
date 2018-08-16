@@ -1,0 +1,155 @@
+// Code Review 07/25/16 - Daria Tarasova - Jingyi Liu - Anna Schmidt
+
+doctype html
+html
+  include ../includes/header.jade  
+  include ../testing/progbar-steps.jade
+
+  style.
+    #center {
+      text-align: center;
+      vertical-align: middle;
+    }
+    img {
+      text-align: center;
+      vertical-align: middle;
+      margin: 2
+    }
+    input {
+      text-align: center;
+    }
+    #loading {
+      width: 50%;
+      position: fixed;
+      top: 30%;
+      left: 40%;
+    }
+    // TODO: center loading img
+
+  .confirm#too_many_files
+    h1 Too many files added
+    p
+      | Only 1 file allowed
+      em
+    button#ok_files(autofocus='') Okay
+
+  .confirm#comma_file
+    h1 Please upload comma delimited values file
+    p
+      em
+    button#ok_comma(autofocus='') Okay
+
+  #loading(style='display:none')
+    img(src='/img/loadingSymbol.gif')
+
+  #center
+    h3
+      | 1. Download tab-delimited file of selected sets
+
+      form(method='post', action='/analyze/download') 
+        input(type='submit', name='submit', value='Download Template')
+
+      br
+      | 2. Annotate images with metadata. See example below.
+      br
+      img(src='/img/metadata_example.png' style='max-width:100%;border:2px solid black;')
+      br
+
+      br
+      | 3. Upload metadata file
+      br
+      br
+      input(type='file', id='metadata', name='results_metadata.csv', accept='.csv')
+      input(type='button', id='metadataSubmit', onclick='FileUpload()', value='Submit')
+      p#upload(style='display:none')
+        | Submitted
+
+      br
+      br  
+      | 4. Display data
+      br
+      br
+      button#display(disabled='', onclick='disp_results()') Display Results
+ 
+ 
+    script(language='javascript').
+      function signifies(file, fname) {
+        $.ajax({
+          url: '/analyze/sign',
+          type: 'post',
+          data: {file: fname},
+        }).done( function (signature) {
+          var xhr = new XMLHttpRequest();
+          xhr.open('PUT', signature.url, true);
+          xhr.setRequestHeader('accept', 'application/json')
+          xhr.setRequestHeader('access-control-allow-origin','*');
+          xhr.setRequestHeader('content-type','csv');
+          xhr.send(file);
+        }).fail(function() {
+          alert('failed to create signature for ' + fname);
+        })
+      }
+
+      function FileUpload() {
+        var metadataFile = document.getElementById('metadata').files
+        if (metadataFile.length == 0) {
+        } else if (metadataFile.length > 1) {
+          $('#too_many_files').show()
+          $('#ok_files').css({'width':'100%'})
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+        } else if (metadataFile[0].name.toLowerCase().lastIndexOf('.csv')==-1) {
+          $('#comma_file').show()
+          $('#ok_comma').css({'width':'100%'})
+          $('body > *').not('body > .confirm').css({'opacity':'0.5', 'pointer-events':'none'})
+        } else {
+          $("#loading").show()
+          $(document.body).css({'pointer-events':'none','filter':'blur(2px)'})
+          var file = metadataFile[0]
+          var fname = metadata.name
+          signifies(file, fname);
+        }
+      };
+
+      // Display results button
+      function disp_results() {
+        $('#display').prop('disabled', true)
+        $.ajax({
+          url: '/analyze/disp_results',
+          type: 'post',
+        }).done(function() {
+          $(location).attr('href','/analyze/disp_results')
+        })
+      }
+
+      var socket = io.connect();
+      $(document).ready(function() {
+        $('.confirm').hide()
+        $('#upload').hide()
+
+        $.post('watch_metadata')
+        $("li#CreateProject").addClass("visited")
+        $("li#Upload").addClass("visited")
+        $("li#CreateSet").addClass("visited")
+        $("li#AnalyzeSet").addClass("visited")
+        $("li#Display").addClass("visited")
+        $("li#Display").addClass("previous")
+        $("li#Metadata").addClass("active")
+        $("li#Export").addClass("next")
+
+        socket.on('data', function(meta) {
+          $('button#display').prop('disabled', false);
+          $('#loading').hide()
+          $(document.body).css({'pointer-events':'auto', 'filter':'none'})
+          $('#upload').show()
+          $('#upload').css({'color':'green'})
+        })
+      })
+ 
+      $('.confirm button').click(function() {
+        $('.confirm').hide()
+        $('body > *').css({'opacity':'1', 'pointer-events': 'auto'})
+      })
+
+          
+  // Footer
+  include ../includes/footer.jade

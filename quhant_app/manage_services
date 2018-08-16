@@ -1,0 +1,122 @@
+#!/bin/bash
+usage() { echo "Usage: $0 [OPTION]
+Manage services for QuHAnT.
+
+  -h	This help document
+  -l	list
+  -s	status
+  -K	kill all
+  -k	kill specific
+  -R	start all
+  -r	start specific (not ready)
+
+List running services:
+  ./manage_services -l
+
+List running services of specific type:
+  ./manage_services -s [manta-sync|quality-control|storage-costs|job-costs|website|monitor_errors]
+
+Kill all running services:
+  ./manage_services -K
+
+Kill service of specific type:
+  ./manage_services -k [manta-sync|quality-control|storage-costs|job-costs|website|monitor_errors]
+
+Start all services:
+  ./manage_services -R
+
+Start specific service:
+  ./manage_services -r [manta-sync|quality-control|storage-costs|job-costs|website|monitor_errors]" 1>&2; exit 1; }
+
+getStatusTask() { 
+  while read p
+  do
+    tasktype=$(echo "$p" | cut -d ',' -f1 | cut -d ':' -f2 | sed 's/ //g')
+    if [ "$s" != "$tasktype" ]; then
+      :
+    else
+      taskid=$(echo "$p" | cut -d ',' -f2 | cut -d ':' -f2 | sed 's/ //g')
+      tstatus=$(ps -e | grep "$taskid")
+      if [[ -z $tstatus ]]; then
+        sed -i "/$taskid/d" Monitoring/services.temp
+      else
+        echo -e $tasktype"\t"$tstatus
+      fi
+    fi
+  done < Monitoring/services.json
+  mv Monitoring/services.temp Monitoring/services.json
+}
+
+getStatus() {
+  while read p
+  do
+    tasktype=$(echo "$p" | cut -d ',' -f1 | cut -d ':' -f2 | sed 's/ //g')
+    taskid=$(echo "$p" | cut -d ',' -f2 | cut -d ':' -f2 | sed 's/ //g')
+    tstatus=$(ps -e | grep "$taskid")
+    if [[ -z $tstatus ]]; then
+      sed -i "/$taskid/d" Monitoring/services.temp
+    else
+      echo -e $tasktype"\t"$tstatus
+    fi
+  done < Monitoring/services.json
+  mv Monitoring/services.temp Monitoring/services.json
+}
+
+startBash() {
+  Date=$(date)
+  nohup bash ./${name}.sh > Monitoring/${name}.log 2>&1&
+  echo '{service: '$name', task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
+}
+
+
+if [ $# -lt 1 ] ; then
+   echo "You must specify at least 1 argument."
+   usage
+   exit 1
+fi
+
+list="manta-sync quality-control storage-costs job-costs website monitor-errors storage-estimate"
+cp Monitoring/services.json Monitoring/services.temp
+while getopts s:k:r:hlKR opt
+do
+   case "$opt" in
+      s) s=$OPTARG
+         getStatusTask
+         ;;
+      h) usage;;
+      l) getStatus;;
+      K) tasks=$(getStatus | cut -f 2 | sed 's/^ //' | cut -d ' ' -f 1)
+         if [[ -z ${tasks} ]]; then
+           :
+         else
+           for id in $tasks
+           do
+             sed -i "/$id/d" Monitoring/services.json
+             kill $id
+           done
+         fi
+         ;;
+      k) s=$OPTARG
+         if [[ " $list " =~ " $s " ]]; then
+           task=$(getStatusTask | cut -f 2 | sed 's/^ //' | cut -d ' ' -f 1)
+           if [[ -z ${task} ]]; then
+             :
+           else
+             kill $task
+             sed -i "/$task/d" Monitoring/services.json
+           fi
+         else
+           usage
+         fi
+         ;;
+      R) ./startapp;;
+      r) name=${OPTARG}
+         if [[ " $list " =~ " $name " ]]; then
+           startBash
+         else
+           usage
+         fi
+         ;;
+      \?) usage;;
+   esac
+done
