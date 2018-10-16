@@ -101,15 +101,22 @@ router.post('/metadata', function (req, res) {
 
 // Display Results
 router.post('/disp_results', function (req, res) {
-  manta.data_analyze(req, function (err, jobId) {
-    if (err) {
-      console.log(err)
-    }
-    req.session.job = jobId
-    db.results.AppendRes(req, jobId, function(err, output) {
-      res.render('results/display_results', {job: String(sess.job)})
+  if (!req.session.sampleproj) {
+    manta.data_analyze(req, function (err, jobId) {
+      if (err) {
+        console.log(err)
+      }
+      req.session.job = jobId
+      db.results.AppendRes(req, jobId, function(err, output) {
+        res.render('results/display_results', {job: String(sess.job)})
+      })
     })
-  })
+  }
+  else {
+    var jobString = 'f58c39ad-35ac-e2cd-cbbc-ed476e722109'
+    req.session.job = jobString 
+    res.render('results/display_results', {job: jobString, local: JSON.stringify(req.session)})
+  }
 })
 
 // Submit metadata
@@ -133,7 +140,7 @@ router.get('/disp_results', function (req, res) {
   if (!sess.username) {
     res.render('users/login')
   } else {
-    res.render('results/display_results', {'job': String(sess.job)})
+    res.render('results/display_results', {'job': String(sess.job), 'local': JSON.stringify(req.session)})
   }
 })
 
@@ -278,12 +285,15 @@ router.post('/skip_metadata', function(req, res) {
       })
     })
   } else {
-    var RealPath = 'public/cors_demo/sampletest/'
+    /*var RealPath = 'public/cors_demo/sampletest/'
     analysis.createReport(req, RealPath, function (err, metadata) {
       manta.mput_all_csv(req, false, function(err, ouput) {
         analyze_info()
       })
     })
+    */
+    req.session.job = '1d40fcd7-598b-e705-f36d-acca0b96411d'
+    res.render('results/display_results')
   }
 
   function analyze_info() {

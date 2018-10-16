@@ -40,6 +40,6 @@ echo '{service: storage-estimate, task_id: '$!', date: ' $Date'}' >> Monitoring/
 nohup bash request-monitoring.sh > Monitoring/request-monitoring.log 2>&1&
 echo '{service: request-monitoring.sh, task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
 
-nohup ./node_modules/forever/bin/forever -w app.js > nohup.out 2>&1&
+nohup ./node_modules/forever/bin/forever app.js > nohup.out 2>&1&
 echo '{service: website, task_id: '$!', date: ' $Date'}' >> Monitoring/services.json
  

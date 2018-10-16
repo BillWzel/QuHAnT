@@ -295,7 +295,7 @@ exports.filterModules = function (user, sess, cb) {
   dictarr = {}
   for (var i in analyses) {
     if (sess.sampleproj) {
-      analyses[i].set_name = sess.username
+      analyses[i].set_name = sess.orig_user
     }
     var mod = analyses[i].module
     if (!dict[mod]) {

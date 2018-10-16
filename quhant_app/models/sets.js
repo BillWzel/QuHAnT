@@ -28,7 +28,6 @@ exports.list_projects = function (req, cb) {
   } else {
     var ProjListOut = prolist
   }
-    
   cb(null, ProjListOut)
   })
 }
@@ -48,7 +47,7 @@ exports.create_set_array = function (req, type, cb) {
     list.forEach(function (filename) {
       checkSymlink = fs.lstatSync(DirPath + '/' + filename).isSymbolicLink()
       if (checkSymlink) {
-        newpath = fs.readlinkSync(DirPath + '/' + filename)
+        var newpath = fs.readlinkSync(DirPath + '/' + filename)
         symlist.push(newpath)
       } else {
         if (!/db|results|Monitoring|.db|.results/.test(filename)) {
@@ -62,12 +61,15 @@ exports.create_set_array = function (req, type, cb) {
         var SetListsym = fs.readdirSync(symlist[symproj])
   
         for (var symset in SetListsym) {
-          if (SetListsym[symset].indexOf(sess.username + type) > -1) {
+          if (SetListsym[symset].indexOf(sess.set_name + type) > -1) {
             var SetStrsym = (SetListsym[symset]).replace(type,'')
             symsetArray.push(SetStrsym)
           }
         }
-        newval = symlist[symproj].replace('public/cors_demo/sampletest/','')
+        var newval = symlist[symproj].replace('public/cors_demo/sampletest/','')
+        if (newval.charAt(newval.length -1) == '/') {
+          newval = newval.substring(0, newval.length -1)
+        }
         projArray.push({project: newval, sets: symsetArray})
       }
     } else {    

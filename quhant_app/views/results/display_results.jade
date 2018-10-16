@@ -97,6 +97,16 @@ html
     $(document).ready(function() {
       //$.post('watch_metadata')
 
+      var sessin = '#{local}'
+      var sessinfo = $.parseJSON(sessin.replace(/&quot;/g,'"'))
+      if (sessinfo.sampleproj) {
+        $('#samplewarning').show()
+      }
+      $('a#changestat').click(function() {
+        $.ajax({type: 'post', url: '/images/changemode'}).done(function() { $(location).attr('href', '/analyze/analyze') })
+      })
+
+
       // Progress bar updates
       $("li#CreateProject").addClass("visited")
       $("li#Upload").addClass("visited")
@@ -109,7 +119,7 @@ html
 
       $('#error').hide()
       $('#doneloading').hide()
-      $('#link').html("<a href='quhant.com/analyze/#{job}'>quhant.com/analyze/#{job}</a>")
+      $('#link').html("<a href='/analyze/#{job}'>quhant.com/analyze/#{job}</a>")
       $('#jobid').html('#{job}') 
       $.post('watch_folder')
       socket.on('zipper', function(zip) {

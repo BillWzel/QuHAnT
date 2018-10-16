@@ -165,7 +165,7 @@ router.get('/sample_disp_results', function (req, res) {
 })
 
 router.post('/sample_watch_folder', function (req, res) {
-  var jobstring = '3ecd90cb-6557-c396-82a3-82e127dd0e6e'
+  var jobstring = '1d40fcd7-598b-e705-f36d-acca0b96411d' 
   var zipArray = fs.readdirSync('public/cors_demo/SampleDataUser/results/' + jobstring)
   setTimeout(function () {
     for (var i in zipArray) {
@@ -178,7 +178,7 @@ router.post('/sample_watch_folder', function (req, res) {
 })
 
 router.post('/sample_download_zip', function (req, res) {
-  var file = 'public/cors_demo/SampleDataUser/results/3ecd90cb-6557-c396-82a3-82e127dd0e6e.zip'
+  var file = 'public/cors_demo/SampleDataUser/results/1d40fcd7-598b-e705-f36d-acca0b96411d.zip'
   res.download(file)
 })
 

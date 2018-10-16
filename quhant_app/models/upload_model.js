@@ -33,7 +33,7 @@ exports.connect = function (id, cb) {
     url: process.env.MANTA_URL
   })
   DROPBOX = '/' + process.env.MANTA_USER + '/stor/cors_demo'
-
+  
   cb(null, [])
 }
 

@@ -16,7 +16,6 @@ exports.get = function (req, cb) {
     var checkSymLink = fs.lstatSync(FilePath).isSymbolicLink()
     if (checkSymLink) {
       FilePath = fs.readlinkSync(FilePath).replace(/\/$/,'') + '/'
-      sess.set_name = sess.username
     } else {
       FilePath = FilePath + '/'
     }

@@ -15,6 +15,8 @@ router.get('/project', function (req, res) {
     sess.parameters = {username: sess.username}
     res.render('users/login')
   } else {
+    sess.project_name = null
+    sess.set_name = null
     user.add_code_to_session(req, function (err, output) {})
     db.chargecodes.crossRefCode(sess.username, function (err, out) {
       if (err) { console.log(err) }
@@ -87,6 +89,10 @@ router.post('/create_project', function (req, res) {
 })
 
 router.get('/sample_project', function (req, res) {
+  req.session.orig_user = req.session.username
+  req.session.username = 'SampleDataUser'
+  req.session.project_name = 'SampleDataProject'
+  req.session.set_name = req.session.orig_user 
   req.session.sampleproj = true
   var sess = req.session
   if (!sess.username) {

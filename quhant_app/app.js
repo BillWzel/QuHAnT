@@ -18,7 +18,6 @@ require('heapdump')
  
 //var csrf = require('csurf')
 
-
 var app = require('express.io')()
 app.http().io()
 
@@ -101,6 +100,11 @@ app.listen(port, function () {
     }
   }) 
 }) 
+
+app.locals({
+  site: "165.225.131.50",
+  owner: "billwzel"
+});
 
 // https.createServer(ssl, app).listen(process.env.PORT || 8443)
 

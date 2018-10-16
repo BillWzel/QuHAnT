@@ -60,6 +60,7 @@
     "socket.io": "^1.4.8",
     "socket.mvc": "^0.2.0",
     "sprintf-js": "^1.1.1",
+    "unzip": "^0.1.11",
     "uuid": "^3.2.1"
   },
   "devDependencies": {

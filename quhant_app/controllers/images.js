@@ -26,7 +26,6 @@ router.get('/display', function (req, res) {
         if (!sess.set_name) {
           sess.set_name = sess.project_name + '_verified'
         }
-
         db.sets.AppendProj(req, 0, 'set', function(err, add) {
           if (err) {
             console.log(err)
@@ -174,6 +173,7 @@ router.post('/updateSet', function (req, res) {
 //change from sample mode to normal mode
 router.post('/changemode', function (req, res) {
   req.session.sampleproj = false
+  req.session.username = req.session.orig_user
   res.end()
 })
 
@@ -212,7 +212,6 @@ router.post('/accept', function (req, res) {
       console.log(err)
     }
   })
-
   // Get module names to present to user
   results.get('modules', function (err, modules) {
     if (err) {

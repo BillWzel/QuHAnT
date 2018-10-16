@@ -201,7 +201,7 @@ router.post('/newUser', function (req, res) {
       
       domain = fs.readFileSync('public/domain.txt').toString()
 
-      var message = 'Hi ' +req.body.firstName + ',\nWelcome to QuHAnT. Follow the link below to verify your email.\n' + 'quhant.com/users/' +randomString+' \n\nHave fun,\nThe QuHAnT Team.' 
+      var message = 'Hi ' +req.body.firstName + ',\nWelcome to QuHAnT. Follow the link below to verify your email.\n' + app.locals.site + '/users/' +randomString+' \n\nHave fun,\nThe QuHAnT Team.' 
       user.sendmail(req.body.firstName, "Confirm Your Email for QuHAnT", message, req.body.email, req, function(err, sent) {
         if (err) {console.log(err)}
         res.render('users/signup', {success: 'We have sent you an email to confirm your account. Please check your inbox.', request: req})
@@ -248,7 +248,7 @@ router.post('/email_recover_password', function (req, res) {
 
       domain = fs.readFileSync('public/domain.txt').toString()
 
-      var link = 'quhant.com/users/password_reset/' + randomString
+      var link = app.locals.site + '/users/password_reset/' + randomString
       // Node Mailer module used to send email
       var transporter = nodemailer.createTransport({
         service: 'Gmail',

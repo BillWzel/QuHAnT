@@ -60,8 +60,9 @@ html
     
 
     div#button
-      input(type='checkbox', id = 'metadata', name='metadata', checked=false)
-      |  Skip metadata upload step
+      div#metadata_button
+        input(type='checkbox', id = 'metadata', name='metadata', checked=false)
+        |  Skip metadata upload step
       br
       button(onclick='check()') Next
     br
@@ -87,6 +88,7 @@ html
       var sessinfo = $.parseJSON('#{local}'.replace(/&quot;/g,'"'))
       if (sessinfo.sampleproj) {
         $('#samplewarning').show()
+        $('#metadata_button').hide()
       }
 
       $('a#changestat').click(function() {
@@ -217,13 +219,14 @@ html
           resultsList.push(input.toString())
         }
       })
-
-      var meta = document.getElementById('metadata').checked
+ 
+      var sessinfo = $.parseJSON('#{local}'.replace(/&quot;/g,'"'))
+      var meta = document.getElementById('metadata').checked 
       if (resultsList.length > 0) {
         $('#loading').show()
         $(document.body).css({'pointer-events':'none', 'filter':'blur(2px)'})
         var mod = $('select#mod_list').val()
-        if (meta == false) {
+        if (meta == false && !sessinfo.sampleproj)  {
           $.ajax({
             type: 'post',
             url: '/analyze/metadata',
